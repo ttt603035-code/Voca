@@ -1,6 +1,5 @@
 import {
   Cloud,
-  Dices,
   Download,
   Import,
   ShieldCheck,
@@ -33,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { ACCENTS, DEFAULT_ACCENT_ID } from "@/lib/accents"
+import { ACCENTS, DEFAULT_ACCENT_ID, getAccent } from "@/lib/accents"
 import { useT } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { useVoca } from "@/store/voca-context"
@@ -75,13 +74,6 @@ export function SettingsPage() {
   const storageKB = (JSON.stringify(state).length / 1024).toFixed(1)
   const hasKey = !!state.settings.geminiKey
   const langName = lang === "zh" ? "中文" : "English"
-
-  function randomAccent() {
-    const others = ACCENTS.filter((a) => a.id !== accentId)
-    const next = others[Math.floor(Math.random() * others.length)]
-    setAccent(next.id)
-    toast(t("accentSet"))
-  }
 
   return (
     <div className="space-y-7">
@@ -154,41 +146,50 @@ export function SettingsPage() {
               ]}
             />
           </div>
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[17px]">{t("accentColor")}</span>
-              <button
-                type="button"
-                onClick={randomAccent}
-                className="flex items-center gap-1 text-[15px] text-primary"
-              >
-                <Dices className="size-4" />
-                {t("random")}
-              </button>
-            </div>
-            <div className="mt-3 grid grid-cols-6 gap-3">
-              {ACCENTS.map((a) => {
-                const active = (accentId ?? DEFAULT_ACCENT_ID) === a.id
-                return (
-                  <button
-                    key={a.id}
-                    type="button"
-                    onClick={() => setAccent(a.id)}
-                    aria-label={a.name}
-                    className={cn(
-                      "mx-auto size-8 rounded-full transition-transform",
-                      active
-                        ? "scale-100 ring-2 ring-foreground/60 ring-offset-2 ring-offset-background"
-                        : "active:scale-90",
-                    )}
-                    style={{
-                      backgroundColor: theme === "dark" ? a.dark : a.light,
-                    }}
-                  />
-                )
-              })}
-            </div>
-          </div>
+          <ListRow
+            primary={t("themeColor")}
+            secondary={getAccent(accentId).name}
+            trailing={
+              <>
+                <span
+                  className="size-4 rounded-full border border-border/70"
+                  style={{
+                    backgroundColor:
+                      theme === "dark"
+                        ? getAccent(accentId).dark
+                        : getAccent(accentId).light,
+                  }}
+                />
+                <Select
+                  value={accentId ?? DEFAULT_ACCENT_ID}
+                  onValueChange={(v) => {
+                    setAccent(v)
+                    toast(t("accentSet"))
+                  }}
+                >
+                  <SelectTrigger
+                    size="sm"
+                    className="h-9 min-w-0 gap-2 border-0 bg-transparent px-2 shadow-none"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCENTS.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        <span className="flex items-center gap-2.5">
+                          <span
+                            className="size-3.5 rounded-full border border-border/70"
+                            style={{ backgroundColor: a.light }}
+                          />
+                          {a.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            }
+          />
         </InsetGroup>
       </section>
 

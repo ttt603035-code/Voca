@@ -45,12 +45,12 @@ function SideItem({ item }: { item: Item }) {
         cn(
           "flex items-center gap-2.5 rounded-[9px] px-2.5 py-2 text-[15px] transition-colors",
           isActive
-            ? "text-white"
+            ? "text-primary-foreground"
             : "text-foreground/85 active:bg-foreground/[0.05] hover:bg-foreground/[0.04]",
         )
       }
       style={({ isActive }) =>
-        isActive ? { backgroundColor: item.tint } : undefined
+        isActive ? { backgroundColor: "var(--primary)" } : undefined
       }
     >
       {({ isActive }) => (
@@ -59,13 +59,13 @@ function SideItem({ item }: { item: Item }) {
             className="flex size-[22px] shrink-0 items-center justify-center rounded-[6px]"
             style={
               isActive
-                ? { backgroundColor: "rgba(255,255,255,0.22)" }
-                : { backgroundColor: `${item.tint}1F` }
+                ? { backgroundColor: "color-mix(in srgb, var(--primary) 18%, transparent)" }
+                : { backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)" }
             }
           >
             <item.icon
               className="size-[15px]"
-              style={isActive ? { color: "#fff" } : { color: item.tint }}
+              style={{ color: isActive ? "var(--primary-foreground)" : "var(--primary)" }}
             />
           </span>
           {t(item.labelKey)}

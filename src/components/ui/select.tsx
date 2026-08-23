@@ -125,7 +125,7 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         "relative flex w-full cursor-default items-center gap-2 rounded-[9px] px-3 py-2.5 text-[15px] outline-hidden select-none",
-        "focus:bg-primary/10 focus:text-primary data-[state=checked]:text-primary",
+        "focus:bg-tint focus:text-primary data-[state=checked]:bg-tint data-[state=checked]:text-primary",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",

@@ -1,32 +1,101 @@
-/** Apple 系统色主题预设（light / dark 双值） */
+/**
+ * 柔和主题色（Accent Theme）
+ *
+ * 主题色只作为 Accent（按钮/进度/选中/图表/焦点），
+ * 不改变页面基础色（白底、深灰文字、浅灰层级）。
+ * 每个主题提供 Light / Dark 两套柔和值 + Tint（选中/激活面）。
+ */
+
 export interface Accent {
   id: string
   name: string
-  /** 浅色模式主色 */
+  /** Light Mode 主色 */
   light: string
-  /** 深色模式主色 */
+  /** Dark Mode 主色（适配深色的柔和值，不是原样照搬） */
   dark: string
-  /** 主色上的文字色（浅色模式） */
+  /** Light Mode Tint（选中/激活背景） */
+  tint: string
+  /** Dark Mode Tint */
+  tintDark: string
+  /** 主色按钮上的文字色 */
   fg: string
-  /** 主色上的文字色（深色模式，缺省同 fg） */
-  fgDark?: string
+  /** Dark Mode 主色按钮上的文字色 */
+  fgDark: string
 }
 
-export const DEFAULT_ACCENT_ID = "apple-blue"
+export const DEFAULT_ACCENT_ID = "soft-blue"
 
 export const ACCENTS: Accent[] = [
-  { id: "apple-blue", name: "系统蓝", light: "#007AFF", dark: "#0A84FF", fg: "#FFFFFF" },
-  { id: "red", name: "系统红", light: "#FF3B30", dark: "#FF453A", fg: "#FFFFFF" },
-  { id: "orange", name: "系统橙", light: "#FF9500", dark: "#FF9F0A", fg: "#FFFFFF" },
-  { id: "yellow", name: "系统黄", light: "#FFCC00", dark: "#FFD60A", fg: "#1C1C1E", fgDark: "#1C1C1E" },
-  { id: "green", name: "系统绿", light: "#34C759", dark: "#30D158", fg: "#FFFFFF" },
-  { id: "mint", name: "系统薄荷", light: "#00C7BE", dark: "#63E6E2", fg: "#1C1C1E", fgDark: "#1C1C1E" },
-  { id: "teal", name: "系统青", light: "#30B0C7", dark: "#40C8E0", fg: "#FFFFFF", fgDark: "#1C1C1E" },
-  { id: "cyan", name: "系统天蓝", light: "#32ADE6", dark: "#64D2FF", fg: "#FFFFFF", fgDark: "#1C1C1E" },
-  { id: "indigo", name: "系统靛", light: "#5856D6", dark: "#5E5CE6", fg: "#FFFFFF" },
-  { id: "purple", name: "系统紫", light: "#AF52DE", dark: "#BF5AF2", fg: "#FFFFFF" },
-  { id: "pink", name: "系统粉", light: "#FF2D55", dark: "#FF375F", fg: "#FFFFFF" },
-  { id: "brown", name: "系统棕", light: "#A2845E", dark: "#AC8E68", fg: "#FFFFFF" },
+  {
+    id: "soft-blue",
+    name: "Soft Blue",
+    light: "#7FA8D8",
+    dark: "#92B3DC",
+    tint: "#EAF2FB",
+    tintDark: "rgba(127, 168, 216, 0.16)",
+    fg: "#1D1D1F",
+    fgDark: "#1D1D1F",
+  },
+  {
+    id: "soft-purple",
+    name: "Soft Purple",
+    light: "#9B8FC4",
+    dark: "#A89DD0",
+    tint: "#F0ECF8",
+    tintDark: "rgba(155, 143, 196, 0.16)",
+    fg: "#1D1D1F",
+    fgDark: "#1D1D1F",
+  },
+  {
+    id: "soft-pink",
+    name: "Soft Pink",
+    light: "#D9A0B5",
+    dark: "#E0ADC1",
+    tint: "#FAEEF2",
+    tintDark: "rgba(217, 160, 181, 0.16)",
+    fg: "#1D1D1F",
+    fgDark: "#1D1D1F",
+  },
+  {
+    id: "soft-peach",
+    name: "Soft Peach",
+    light: "#D9A47F",
+    dark: "#E0B08D",
+    tint: "#FBF1EA",
+    tintDark: "rgba(217, 164, 127, 0.16)",
+    fg: "#1D1D1F",
+    fgDark: "#1D1D1F",
+  },
+  {
+    id: "soft-mint",
+    name: "Soft Mint",
+    light: "#83B9A4",
+    dark: "#92C2B0",
+    tint: "#EDF7F2",
+    tintDark: "rgba(131, 185, 164, 0.16)",
+    fg: "#1D1D1F",
+    fgDark: "#1D1D1F",
+  },
+  {
+    id: "soft-yellow",
+    name: "Soft Yellow",
+    light: "#C7AD6D",
+    dark: "#CDB87F",
+    tint: "#FBF7E8",
+    tintDark: "rgba(199, 173, 109, 0.16)",
+    fg: "#1D1D1F",
+    fgDark: "#1D1D1F",
+  },
+  {
+    id: "black",
+    name: "Black",
+    light: "#000000",
+    dark: "#F5F5F7",
+    tint: "#F2F2F2",
+    tintDark: "rgba(245, 245, 247, 0.14)",
+    fg: "#FFFFFF",
+    fgDark: "#1D1D1F",
+  },
 ]
 
 export function getAccent(id: string | null | undefined): Accent {
@@ -38,9 +107,11 @@ const VAR_KEYS = [
   "--voca-accent-dark",
   "--voca-accent-fg",
   "--voca-accent-fg-dark",
+  "--voca-tint",
+  "--voca-tint-dark",
 ] as const
 
-/** 将主题色应用为 CSS 变量；null 表示恢复 Apple 系统蓝 */
+/** 将主题色应用为 CSS 变量；null 表示默认 Soft Blue */
 export function applyAccent(id: string | null): void {
   if (typeof document === "undefined") return
   const root = document.documentElement
@@ -52,5 +123,7 @@ export function applyAccent(id: string | null): void {
   root.style.setProperty("--voca-accent", accent.light)
   root.style.setProperty("--voca-accent-dark", accent.dark)
   root.style.setProperty("--voca-accent-fg", accent.fg)
-  root.style.setProperty("--voca-accent-fg-dark", accent.fgDark ?? accent.fg)
+  root.style.setProperty("--voca-accent-fg-dark", accent.fgDark)
+  root.style.setProperty("--voca-tint", accent.tint)
+  root.style.setProperty("--voca-tint-dark", accent.tintDark)
 }

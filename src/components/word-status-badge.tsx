@@ -1,22 +1,27 @@
+import { useT } from "@/lib/i18n"
+import type { LocaleKey } from "@/lib/locales"
 import type { WordProgress } from "@/lib/types"
 import { todayStr } from "@/lib/srs"
 import { cn } from "@/lib/utils"
 
-/** Apple 风格轻量状态：小圆点 + 文字（不用 Badge 堆叠） */
+/**
+ * 单词状态（同色系：使用当前主题色的透明度变化，保持克制）
+ * 未学习 → 灰色；学习中 → 主题色 60%；待复习/已掌握 → 主题色
+ */
 export function wordStatusMeta(
   p: WordProgress,
   today = todayStr(),
-): { label: string; color: string } {
+): { key: LocaleKey; color: string; dim?: boolean } {
   if (p.status === "new") {
-    return { label: "未学习", color: "#8E8E93" }
+    return { key: "statusNew", color: "var(--muted-foreground)" }
   }
   if (p.status === "mastered") {
-    return { label: "已掌握", color: "#34C759" }
+    return { key: "statusMastered", color: "var(--primary)" }
   }
   if (p.due <= today) {
-    return { label: "待复习", color: "#FF9500" }
+    return { key: "statusDue", color: "var(--primary)" }
   }
-  return { label: "学习中", color: "#32ADE6" }
+  return { key: "statusLearning", color: "var(--primary)", dim: true }
 }
 
 export function WordStatusText({
@@ -26,17 +31,22 @@ export function WordStatusText({
   progress: WordProgress
   className?: string
 }) {
-  const { label, color } = wordStatusMeta(progress)
+  const { t } = useT()
+  const { key, color, dim } = wordStatusMeta(progress)
   return (
     <span
-      className={cn("flex items-center gap-1.5 text-[13px]", className)}
+      className={cn(
+        "flex items-center gap-1.5 text-[13px]",
+        dim && "opacity-60",
+        className,
+      )}
       style={{ color }}
     >
       <span
         className="size-1.5 rounded-full"
-        style={{ backgroundColor: color }}
+        style={{ backgroundColor: color, opacity: dim ? 0.5 : 1 }}
       />
-      {label}
+      {t(key)}
     </span>
   )
 }

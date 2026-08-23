@@ -209,7 +209,7 @@ export function AppleButton({
         variant === "filled" &&
           "h-12 w-full bg-primary text-[17px] text-primary-foreground",
         variant === "tinted" &&
-          "h-12 w-full bg-primary/10 text-[17px] text-primary",
+          "h-12 w-full bg-tint text-[17px] text-primary",
         variant === "plain" && "h-11 px-4 text-[17px] text-primary",
         size === "sm" && "h-10 text-[15px]",
         className,
@@ -262,7 +262,7 @@ export function ProgressBar({
   return (
     <div
       className={cn(
-        "h-1 w-full overflow-hidden rounded-full bg-foreground/[0.08]",
+        "h-1 w-full overflow-hidden rounded-full bg-tint",
         className,
       )}
     >

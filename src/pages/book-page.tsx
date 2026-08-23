@@ -116,7 +116,7 @@ export function BookPage() {
         <Select value={range} onValueChange={(v) => setRange(v as ScopeRange)}>
           <SelectTrigger
             size="sm"
-            className="h-10 rounded-full bg-primary/10 px-4 font-medium text-primary hover:bg-primary/15 dark:bg-primary/15"
+            className="h-10 rounded-full bg-tint px-4 font-medium text-primary hover:opacity-80"
           >
             <SelectValue />
           </SelectTrigger>
@@ -177,9 +177,7 @@ export function BookPage() {
                 <ProgressBar
                   value={s.pct}
                   className="mt-2.5 h-1"
-                  barClassName={
-                    s.recentlyStudied ? "bg-primary" : "bg-[#34C759] dark:bg-[#30D158]"
-                  }
+                  barClassName={s.recentlyStudied ? "bg-primary" : "bg-primary/55"}
                 />
               </button>
             )

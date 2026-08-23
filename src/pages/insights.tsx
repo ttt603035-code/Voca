@@ -41,9 +41,9 @@ export function InsightsPage() {
     label: p.label,
     highlight: p.date === today,
     segments: [
-      { value: p.learned, className: "bg-[#FF9500]/85" },
-      { value: p.reviewed, className: "bg-[#FF9EBB]/90" },
-      { value: p.pending ?? 0, className: "bg-foreground/[0.12]" },
+      { value: p.learned, className: "bg-primary/90" },
+      { value: p.reviewed, className: "bg-primary/45" },
+      { value: p.pending ?? 0, className: "bg-primary/20" },
     ],
   }))
   const timePoints = points.map((p) => ({
@@ -137,10 +137,10 @@ export function InsightsPage() {
         <GroupHeader>{t("wordsTrend")}</GroupHeader>
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <ChartDot className="bg-[#FF9500]/85" label={t("legendLearned")} />
-            <ChartDot className="bg-[#FF9EBB]/90" label={t("legendReviewed")} />
+            <ChartDot className="bg-primary/90" label={t("legendLearned")} />
+            <ChartDot className="bg-primary/45" label={t("legendReviewed")} />
             <ChartDot
-              className="bg-foreground/[0.15]"
+              className="bg-primary/20"
               label={t("pendingNow", { n: pending })}
             />
           </div>
@@ -160,20 +160,24 @@ export function InsightsPage() {
         <div className="space-y-3">
           <AppleStackedBar
             parts={[
-              { value: mastered, className: "bg-[#34C759] dark:bg-[#30D158]" },
-              { value: learning, className: "bg-[#32ADE6]" },
-              { value: fresh, className: "bg-foreground/[0.12]" },
+              { value: mastered, className: "bg-primary" },
+              { value: learning, className: "bg-primary/55" },
+              { value: fresh, className: "bg-foreground/[0.10]" },
             ]}
           />
           <div className="flex flex-wrap gap-x-5 gap-y-1.5">
             <ChartDot
-              className="bg-[#34C759] dark:bg-[#30D158]"
+              className="bg-primary"
               label={t("mastered")}
               count={mastered}
             />
-            <ChartDot className="bg-[#32ADE6]" label={t("learning")} count={learning} />
             <ChartDot
-              className="bg-foreground/[0.15]"
+              className="bg-primary/55"
+              label={t("learning")}
+              count={learning}
+            />
+            <ChartDot
+              className="bg-foreground/[0.12]"
               label={t("newWords")}
               count={fresh}
             />

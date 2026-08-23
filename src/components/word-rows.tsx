@@ -48,7 +48,7 @@ export function WordRow({
               }
             }}
             aria-label="发音"
-            className="-mr-1.5 flex size-8 shrink-0 items-center justify-center rounded-full text-primary/70 transition-colors active:bg-primary/10 active:text-primary"
+            className="-mr-1.5 flex size-8 shrink-0 items-center justify-center rounded-full text-primary/70 transition-colors active:bg-tint active:text-primary"
           >
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 5 6 9H2v6h4l5 4V5z" />
@@ -58,7 +58,7 @@ export function WordRow({
           </button>
           {word.favorite && (
             <svg
-              className="size-3.5 text-[#FF3B30]"
+              className="size-3.5 text-primary"
               viewBox="0 0 24 24"
               fill="currentColor"
               aria-hidden

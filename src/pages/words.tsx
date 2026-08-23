@@ -63,7 +63,7 @@ export function WordsPage() {
                   b.builtIn ? (
                     <span className="flex items-center gap-2">
                       {b.name}
-                      <span className="rounded-[5px] bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                      <span className="rounded-[5px] bg-tint px-1.5 py-0.5 text-[10px] font-medium text-primary">
                         {t("builtInBook")}
                       </span>
                     </span>

@@ -88,9 +88,9 @@ export function TodayPage() {
     label: p.label,
     highlight: p.date === today,
     segments: [
-      { value: p.learned, className: "bg-[#FF9500]/85" },
-      { value: p.reviewed, className: "bg-[#FF9EBB]/90" },
-      { value: p.pending ?? 0, className: "bg-foreground/[0.12]" },
+      { value: p.learned, className: "bg-primary/90" },
+      { value: p.reviewed, className: "bg-primary/45" },
+      { value: p.pending ?? 0, className: "bg-primary/20" },
     ],
   }))
   const timePoints = points.map((p) => ({
@@ -210,10 +210,10 @@ export function TodayPage() {
 
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <ChartDot className="bg-[#FF9500]/85" label={t("legendLearned")} />
-            <ChartDot className="bg-[#FF9EBB]/90" label={t("legendReviewed")} />
+            <ChartDot className="bg-primary/90" label={t("legendLearned")} />
+            <ChartDot className="bg-primary/45" label={t("legendReviewed")} />
             <ChartDot
-              className="bg-foreground/[0.15]"
+              className="bg-primary/20"
               label={t("pendingNow", { n: pending })}
             />
           </div>

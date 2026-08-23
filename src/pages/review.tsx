@@ -292,6 +292,14 @@ export function ReviewPage() {
   const word = currentId ? (wordMap.get(currentId) ?? null) : null
   const list = word ? state.lists.find((l) => l.id === word.listId) : null
 
+  /** 翻转卡片：翻到背面时自动朗读单词 */
+  function flipCard() {
+    if (!word) return
+    const next = !flipped
+    if (next) speak(word.word)
+    setFlipped(next)
+  }
+
   /* 完成时：记录会话（副作用放在 effect 中，渲染期只做纯计算） */
   React.useEffect(() => {
     if (!finished || sessionRecordedRef.current) return
@@ -374,7 +382,7 @@ export function ReviewPage() {
       if (finished || !word) return
       if ((e.key === " " || e.key === "Enter") && !flipped) {
         e.preventDefault()
-        setFlipped((f) => !f)
+        flipCard()
       }
       const idx = ["1", "2", "3", "4"].indexOf(e.key)
       if (idx >= 0 && flipped) handleRate(RATINGS[idx].value)
@@ -425,7 +433,7 @@ export function ReviewPage() {
                 <span className="text-muted-foreground">
                   {t("masteredStat")}
                 </span>
-                <span className="font-medium tabular-nums text-[#34C759] dark:text-[#30D158]">
+                <span className="font-medium tabular-nums text-primary">
                   {mastered}
                 </span>
               </div>
@@ -433,7 +441,7 @@ export function ReviewPage() {
                 <span className="text-muted-foreground">
                   {t("needReviewStat")}
                 </span>
-                <span className="font-medium tabular-nums text-[#FF9500] dark:text-[#FF9F0A]">
+                <span className="font-medium tabular-nums text-primary/60">
                   {needReview}
                 </span>
               </div>
@@ -586,7 +594,7 @@ export function ReviewPage() {
       <div className="flex flex-1 items-center py-6">
         <div
           className="h-full w-full cursor-pointer select-none [perspective:1600px]"
-          onClick={() => setFlipped((f) => !f)}
+          onClick={flipCard}
           role="button"
           aria-label={flipped ? t("tapToHide") : t("tapToReveal")}
         >
@@ -610,7 +618,7 @@ export function ReviewPage() {
                   }}
                   aria-label={t("speak")}
                   className={cn(
-                    "flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform active:scale-90",
+                    "flex size-11 items-center justify-center rounded-full bg-tint text-primary transition-transform active:scale-90",
                     speakingWord === word.word && "animate-pulse",
                   )}
                 >
@@ -651,7 +659,7 @@ export function ReviewPage() {
                   }}
                   aria-label={t("speak")}
                   className={cn(
-                    "flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform active:scale-90",
+                    "flex size-11 items-center justify-center rounded-full bg-tint text-primary transition-transform active:scale-90",
                     speakingWord === word.word && "animate-pulse",
                   )}
                 >
@@ -721,7 +729,7 @@ function ScopeChip({ title, onClear }: { title: string; onClear: () => void }) {
     <button
       type="button"
       onClick={onClear}
-      className="flex min-w-0 items-center gap-1.5 rounded-full bg-primary/10 py-1.5 pr-2 pl-3.5 text-[14px] font-medium text-primary"
+      className="flex min-w-0 items-center gap-1.5 rounded-full bg-tint py-1.5 pr-2 pl-3.5 text-[14px] font-medium text-primary"
     >
       <span className="truncate">{title}</span>
       <X className="size-3.5 shrink-0 opacity-60" />

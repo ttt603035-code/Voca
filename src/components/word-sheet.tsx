@@ -257,7 +257,7 @@ export function WordSheet({
                   className={cn(
                     "-mr-1 -mt-1 flex size-11 items-center justify-center rounded-full transition-colors active:bg-foreground/[0.06]",
                     word.favorite
-                      ? "text-[#FF3B30]"
+                      ? "text-primary"
                       : "text-muted-foreground/50",
                   )}
                 >
@@ -300,19 +300,19 @@ export function WordSheet({
                 <InsetGroup>
                   <ListRow
                     icon={Volume2}
-                    tint="#007AFF"
+                    tint="var(--primary)"
                     primary={t("speak")}
                     as="button"
                     onClick={() => speak(word.word)}
                     trailing={
                       speakingWord === word.word ? (
-                        <Volume2 className="size-5 animate-pulse text-[#007AFF]" />
+                        <Volume2 className="size-5 animate-pulse text-primary" />
                       ) : undefined
                     }
                   />
                   <ListRow
                     icon={Heart}
-                    tint="#FF3B30"
+                    tint="var(--primary)"
                     primary={word.favorite ? t("unfavorite") : t("favorite")}
                     as="button"
                     onClick={() => toggleFavorite(word.id)}
@@ -338,7 +338,7 @@ export function WordSheet({
                   {progress && progress.reps > 0 && (
                     <ListRow
                       icon={RotateCcw}
-                      tint="#FF9500"
+                      tint="var(--primary)"
                       primary={t("resetProgress")}
                       as="button"
                       onClick={() => {
@@ -350,7 +350,7 @@ export function WordSheet({
                   {!word.builtIn && (
                     <ListRow
                       icon={Trash2}
-                      tint="#FF3B30"
+                      tint="var(--primary)"
                       primary={
                         <span className="text-destructive">
                           {t("deleteWord")}

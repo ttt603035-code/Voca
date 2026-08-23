@@ -195,7 +195,7 @@ function Practice({ group, onBack }: { group: SimilarGroup; onBack: () => void }
           type="button"
           onClick={() => speak(current.word)}
           aria-label={t("speak")}
-          className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform active:scale-90"
+          className="flex size-12 items-center justify-center rounded-full bg-tint text-primary transition-transform active:scale-90"
         >
           <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 5 6 9H2v6h4l5 4V5z" />
@@ -304,7 +304,7 @@ export function SimilarPage() {
           <button
             type="button"
             onClick={() => setNewOpen(true)}
-            className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary"
+            className="flex size-9 items-center justify-center rounded-full bg-tint text-primary"
             aria-label={t("newGroup")}
           >
             <Plus className="size-5" />
@@ -321,7 +321,7 @@ export function SimilarPage() {
         >
           <SelectTrigger
             size="sm"
-            className="h-10 rounded-full bg-primary/10 px-4 font-medium text-primary hover:bg-primary/15 dark:bg-primary/15"
+            className="h-10 rounded-full bg-tint px-4 font-medium text-primary hover:opacity-80"
           >
             <SelectValue />
           </SelectTrigger>
@@ -369,7 +369,7 @@ export function SimilarPage() {
               primary={
                 <span className="flex items-center gap-2">
                   {g.title}
-                  <span className="rounded-[5px] bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                  <span className="rounded-[5px] bg-tint px-1.5 py-0.5 text-[10px] font-medium text-primary">
                     {t(categoryKey(g.category))}
                   </span>
                 </span>
@@ -385,7 +385,7 @@ export function SimilarPage() {
                   aria-label={t("favorite")}
                   className={cn(
                     "-mr-2 flex size-8 items-center justify-center rounded-full transition-colors active:bg-foreground/[0.05]",
-                    g.favorite ? "text-[#FF3B30]" : "text-muted-foreground/40",
+                    g.favorite ? "text-primary" : "text-muted-foreground/40",
                   )}
                 >
                   <Heart
@@ -481,7 +481,7 @@ export function SimilarGroupPage() {
             aria-label={t("favorite")}
             className={cn(
               "flex size-9 items-center justify-center rounded-full transition-colors active:bg-foreground/[0.05]",
-              group.favorite ? "text-[#FF3B30]" : "text-muted-foreground/50",
+              group.favorite ? "text-primary" : "text-muted-foreground/50",
             )}
           >
             <Heart
