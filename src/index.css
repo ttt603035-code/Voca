@@ -1,0 +1,192 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* iPhone 底部 Tab Bar 高度（54px 内容 + 安全区） */
+  --tabbar-h: calc(54px + env(safe-area-inset-bottom));
+
+  /* 主题色（Accent，可被设置页覆盖）—— 默认 Soft Blue */
+  --voca-accent: #7fa8d8;
+  --voca-accent-dark: #92b3dc;
+  --voca-accent-fg: #1d1d1f;
+  --voca-accent-fg-dark: #1d1d1f;
+  --voca-tint: #eaf2fb;
+  --voca-tint-dark: rgba(127, 168, 216, 0.16);
+  --tint: var(--voca-tint);
+
+  /* 页面背景：纯白（Apple 风格）；分组/次级区域用极浅灰区分 */
+  --background: #ffffff;
+  --grouped: #f5f5f7;
+  --foreground: #1d1d1f;
+  --card: #ffffff;
+  --card-foreground: #1d1d1f;
+  --popover: #ffffff;
+  --popover-foreground: #1d1d1f;
+  --primary: var(--voca-accent);
+  --primary-foreground: var(--voca-accent-fg);
+  --secondary: #f2f2f5;
+  --secondary-foreground: #1d1d1f;
+  --muted: #f5f5f7;
+  --muted-foreground: #6e6e73;
+  --accent: #f5f5f7;
+  --accent-foreground: #1d1d1f;
+  --destructive: #ff3b30;
+  --border: #e8e8ed;
+  --input: #e8e8ed;
+  --ring: var(--voca-accent);
+  --chart-1: var(--voca-accent);
+  --chart-2: var(--voca-accent);
+  --chart-3: var(--voca-accent);
+  --chart-4: var(--voca-accent);
+  --chart-5: var(--voca-accent);
+  --radius: 10px;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1d1d1f;
+  --sidebar-primary: var(--voca-accent);
+  --sidebar-primary-foreground: var(--voca-accent-fg);
+  --sidebar-accent: var(--voca-tint);
+  --sidebar-accent-foreground: #1d1d1f;
+  --sidebar-border: #e8e8ed;
+  --sidebar-ring: var(--voca-accent);
+}
+
+.dark {
+  --tint: var(--voca-tint-dark);
+  --background: #000000;
+  --grouped: #1c1c1e;
+  --foreground: #f5f5f7;
+  --card: #1c1c1e;
+  --card-foreground: #f5f5f7;
+  --popover: #2c2c2e;
+  --popover-foreground: #f5f5f7;
+  --primary: var(--voca-accent-dark);
+  --primary-foreground: var(--voca-accent-fg-dark);
+  --secondary: #2c2c2e;
+  --secondary-foreground: #f5f5f7;
+  --muted: #2c2c2e;
+  --muted-foreground: #98989e;
+  --accent: #2c2c2e;
+  --accent-foreground: #f5f5f7;
+  --destructive: #ff453a;
+  --border: #38383a;
+  --input: #38383a;
+  --ring: var(--voca-accent-dark);
+  --chart-1: var(--voca-accent-dark);
+  --chart-2: var(--voca-accent-dark);
+  --chart-3: var(--voca-accent-dark);
+  --chart-4: var(--voca-accent-dark);
+  --chart-5: var(--voca-accent-dark);
+  --sidebar: #000000;
+  --sidebar-foreground: #f5f5f7;
+  --sidebar-primary: var(--voca-accent-dark);
+  --sidebar-primary-foreground: var(--voca-accent-fg-dark);
+  --sidebar-accent: var(--voca-tint-dark);
+  --sidebar-accent-foreground: #f5f5f7;
+  --sidebar-border: #38383a;
+  --sidebar-ring: var(--voca-accent-dark);
+}
+
+@theme inline {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-tint: var(--tint);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-grouped: var(--grouped);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) - 3px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-lg: calc(var(--radius) + 3px);
+  --radius-xl: calc(var(--radius) + 9px);
+  --animate-page-in: page-in 0.26s cubic-bezier(0.25, 0.6, 0.3, 1);
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-pop-in: pop-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    /* iOS 风格：隐藏滚动条 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-size: 17px;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
+  button {
+    @apply touch-manipulation;
+  }
+}

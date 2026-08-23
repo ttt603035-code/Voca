@@ -1,0 +1,14 @@
+{
+  "books": [
+    {
+      "id": "tem4",
+      "name": "专四",
+      "file": "/vocabulary/tem4.json"
+    },
+    {
+      "id": "cet6",
+      "name": "六级",
+      "file": "/vocabulary/cet6.json"
+    }
+  ]
+}
