@@ -325,14 +325,16 @@ export function WordSheet({
                     onClick={() => setMode("similar")}
                     chevron
                   />
-                  <ListRow
-                    icon={Pencil}
-                    tint="#8E8E93"
-                    primary={t("edit")}
-                    as="button"
-                    onClick={() => setMode("edit")}
-                    chevron
-                  />
+                  {!word.builtIn && (
+                    <ListRow
+                      icon={Pencil}
+                      tint="#8E8E93"
+                      primary={t("edit")}
+                      as="button"
+                      onClick={() => setMode("edit")}
+                      chevron
+                    />
+                  )}
                   {progress && progress.reps > 0 && (
                     <ListRow
                       icon={RotateCcw}
@@ -345,17 +347,19 @@ export function WordSheet({
                       }}
                     />
                   )}
-                  <ListRow
-                    icon={Trash2}
-                    tint="#FF3B30"
-                    primary={
-                      <span className="text-destructive">
-                        {t("deleteWord")}
-                      </span>
-                    }
-                    as="button"
-                    onClick={() => setConfirmDelete(true)}
-                  />
+                  {!word.builtIn && (
+                    <ListRow
+                      icon={Trash2}
+                      tint="#FF3B30"
+                      primary={
+                        <span className="text-destructive">
+                          {t("deleteWord")}
+                        </span>
+                      }
+                      as="button"
+                      onClick={() => setConfirmDelete(true)}
+                    />
+                  )}
                 </InsetGroup>
               </div>
             </>

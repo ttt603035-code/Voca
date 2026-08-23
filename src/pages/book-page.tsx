@@ -41,24 +41,31 @@ export function BookPage() {
         title={book.name}
         back={() => navigate("/words")}
         actions={
-          <>
-            <button
-              type="button"
-              onClick={() => setImportOpen(true)}
-              className="text-[17px] font-medium text-primary"
-            >
-              {t("import")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setAddOpen(true)}
-              className="text-[17px] font-medium text-primary"
-            >
-              + {t("addWord")}
-            </button>
-          </>
+          book.builtIn ? undefined : (
+            <>
+              <button
+                type="button"
+                onClick={() => setImportOpen(true)}
+                className="text-[17px] font-medium text-primary"
+              >
+                {t("import")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddOpen(true)}
+                className="text-[17px] font-medium text-primary"
+              >
+                + {t("addWord")}
+              </button>
+            </>
+          )
         }
       />
+      {book.builtIn && (
+        <p className="-mt-3 text-[13px] text-muted-foreground/70">
+          {t("builtInBookReadOnly")}
+        </p>
+      )}
       <p className="-mt-3 text-[15px] text-muted-foreground">
         {t("bookSubtitle", { lists: stats.lists, words: stats.total })} ·{" "}
         <span className="text-[#34C759]">

@@ -1,4 +1,4 @@
-import { BookOpen, Heart, Import, Plus, Copy, CircleX } from "lucide-react"
+import { BookOpen, CircleX, Copy, Heart, Import, Loader2, Plus, RefreshCw } from "lucide-react"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { ImportVocabSheet } from "@/components/import-vocab-sheet"
@@ -14,7 +14,7 @@ import { bookStats, useVoca } from "@/store/voca-context"
 import { useT } from "@/lib/i18n"
 
 export function WordsPage() {
-  const { state } = useVoca()
+  const { state, builtIn, reloadBuiltIn } = useVoca()
   const { t } = useT()
   const navigate = useNavigate()
   const [importOpen, setImportOpen] = React.useState(false)
@@ -49,46 +49,75 @@ export function WordsPage() {
       {/* 单词本 */}
       <section className="space-y-2.5">
         <GroupHeader>{t("vocabulary")}</GroupHeader>
-        {state.books.length > 0 ? (
-          <InsetGroup>
-            {state.books.map((b) => {
-              const s = bookStats(state, b.id)
-              return (
-                <ListRow
-                  key={b.id}
-                  icon={BookOpen}
-                  tint="#007AFF"
-                  as="button"
-                  onClick={() => navigate(`/words/books/${b.id}`)}
-                  primary={b.name}
-                  secondary={t("bookSubtitle", {
-                    lists: s.lists,
-                    words: s.total,
-                  })}
-                  trailing={
+        <InsetGroup>
+          {state.books.map((b) => {
+            const s = bookStats(state, b.id)
+            return (
+              <ListRow
+                key={b.id}
+                icon={BookOpen}
+                tint={b.builtIn ? "#007AFF" : "#34C759"}
+                as="button"
+                onClick={() => navigate(`/words/books/${b.id}`)}
+                primary={
+                  b.builtIn ? (
                     <span className="flex items-center gap-2">
-                      <span className="text-[13px] tabular-nums text-[#34C759]">
-                        {s.mastered} {t("mastered")}
+                      {b.name}
+                      <span className="rounded-[5px] bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                        {t("builtInBook")}
                       </span>
                     </span>
-                  }
-                  chevron
-                />
-              )
-            })}
-          </InsetGroup>
-        ) : (
-          <InsetGroup>
+                  ) : (
+                    b.name
+                  )
+                }
+                secondary={t("bookSubtitle", {
+                  lists: s.lists,
+                  words: s.total,
+                })}
+                trailing={
+                  <span className="flex items-center gap-2">
+                    <span className="text-[13px] tabular-nums text-[#34C759]">
+                      {s.mastered} {t("mastered")}
+                    </span>
+                  </span>
+                }
+                chevron
+              />
+            )
+          })}
+          {/* 内置词库加载状态 */}
+          {!builtIn.loaded && (
             <ListRow
-              icon={Import}
-              tint="#007AFF"
-              as="button"
-              onClick={() => setImportOpen(true)}
-              primary={t("emptyVocabulary")}
-              secondary={t("emptyVocabularyDesc")}
-              chevron
+              icon={Loader2}
+              tint="#8E8E93"
+              primary={
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin" />
+                  {t("loadingBooks")}
+                </span>
+              }
             />
-          </InsetGroup>
+          )}
+          {builtIn.loaded && builtIn.error && (
+            <ListRow
+              icon={RefreshCw}
+              tint="#FF3B30"
+              primary={
+                <span className="text-destructive">{t("booksLoadError")}</span>
+              }
+              as="button"
+              onClick={reloadBuiltIn}
+              trailing={
+                <span className="text-[14px] text-primary">{t("retry")}</span>
+              }
+            />
+          )}
+        </InsetGroup>
+        {state.books.length === 0 && !builtIn.loaded && (
+          <p className="px-1 text-[13px] text-muted-foreground">
+            {t("emptyVocabularyDesc")}
+          </p>
         )}
       </section>
 

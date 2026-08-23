@@ -34,7 +34,10 @@ export function ImportVocabSheet({
   const [parsing, setParsing] = React.useState(false)
   const [pasteOpen, setPasteOpen] = React.useState(false)
   const [pasteText, setPasteText] = React.useState("")
-  const [conflict, setConflict] = React.useState<string | null>(null)
+  const [conflict, setConflict] = React.useState<{
+    name: string
+    builtIn: boolean
+  } | null>(null)
 
   const csvRef = React.useRef<HTMLInputElement>(null)
   const xlsxRef = React.useRef<HTMLInputElement>(null)
@@ -87,16 +90,15 @@ export function ImportVocabSheet({
     finishParse(parseTxt(pasteText), t("pasteText"))
   }
 
-  /** 冲突检测：是否已存在同名词库 */
-  function conflictingBook(): string | null {
+  /** 冲突检测：是否已存在同名词库（区分内置/用户） */
+  function conflictingBook(): { name: string; builtIn: boolean } | null {
     if (!payload) return null
     for (const b of payload.books) {
-      if (
-        state.books.some(
-          (x) => x.name.toLowerCase() === b.name.toLowerCase(),
-        )
-      ) {
-        return b.name
+      const existing = state.books.find(
+        (x) => x.name.toLowerCase() === b.name.toLowerCase(),
+      )
+      if (existing) {
+        return { name: existing.name, builtIn: !!existing.builtIn }
       }
     }
     return null
@@ -292,22 +294,33 @@ export function ImportVocabSheet({
           onOpenChange={(o) => !o && setConflict(null)}
           title={t("alreadyExistsTitle")}
           description={
-            conflict ? t("alreadyExistsDesc", { name: conflict }) : undefined
+            conflict
+              ? conflict.builtIn
+                ? t("builtInConflictDesc", { name: conflict.name })
+                : t("alreadyExistsDesc", { name: conflict.name })
+              : undefined
           }
-          rows={[
-            {
-              label: t("updateExisting"),
-              onClick: () => doImport("update"),
-            },
-            {
-              label: t("createDuplicate"),
-              onClick: () => doImport("duplicate"),
-            },
-            {
-              label: t("cancel"),
-              onClick: () => undefined,
-            },
-          ]}
+          rows={
+            conflict?.builtIn
+              ? [
+                  {
+                    label: t("createDuplicate"),
+                    onClick: () => doImport("duplicate"),
+                  },
+                  { label: t("cancel"), onClick: () => undefined },
+                ]
+              : [
+                  {
+                    label: t("updateExisting"),
+                    onClick: () => doImport("update"),
+                  },
+                  {
+                    label: t("createDuplicate"),
+                    onClick: () => doImport("duplicate"),
+                  },
+                  { label: t("cancel"), onClick: () => undefined },
+                ]
+          }
         />
       </SheetContent>
     </Sheet>

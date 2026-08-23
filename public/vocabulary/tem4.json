@@ -1,0 +1,567 @@
+{
+  "id": "tem4",
+  "name": "专四",
+  "lists": [
+    {
+      "id": "tem4-list-01",
+      "name": "List 01",
+      "order": 1,
+      "words": [
+        {
+          "id": "tem4-list01-001",
+          "word": "apple",
+          "phonetic": "/ˈæpl/",
+          "meaning": "苹果",
+          "partOfSpeech": "n.",
+          "example": "I eat an apple every morning.",
+          "wordOrder": 1
+        },
+        {
+          "id": "tem4-list01-002",
+          "word": "water",
+          "phonetic": "/ˈwɔːtər/",
+          "meaning": "水；水分",
+          "partOfSpeech": "n.",
+          "example": "Please give me a glass of water.",
+          "wordOrder": 2
+        },
+        {
+          "id": "tem4-list01-003",
+          "word": "house",
+          "phonetic": "/haʊs/",
+          "meaning": "房子；住宅",
+          "partOfSpeech": "n.",
+          "example": "They live in a small house near the park.",
+          "wordOrder": 3
+        },
+        {
+          "id": "tem4-list01-004",
+          "word": "book",
+          "phonetic": "/bʊk/",
+          "meaning": "书；书籍",
+          "partOfSpeech": "n.",
+          "example": "She is reading an interesting book.",
+          "wordOrder": 4
+        },
+        {
+          "id": "tem4-list01-005",
+          "word": "friend",
+          "phonetic": "/frend/",
+          "meaning": "朋友",
+          "partOfSpeech": "n.",
+          "example": "He is my best friend since childhood.",
+          "wordOrder": 5
+        },
+        {
+          "id": "tem4-list01-006",
+          "word": "happy",
+          "phonetic": "/ˈhæpi/",
+          "meaning": "高兴的；幸福的",
+          "partOfSpeech": "adj.",
+          "example": "I am happy to see you again.",
+          "wordOrder": 6
+        },
+        {
+          "id": "tem4-list01-007",
+          "word": "food",
+          "phonetic": "/fuːd/",
+          "meaning": "食物",
+          "partOfSpeech": "n.",
+          "example": "The food here is very tasty.",
+          "wordOrder": 7
+        },
+        {
+          "id": "tem4-list01-008",
+          "word": "morning",
+          "phonetic": "/ˈmɔːrnɪŋ/",
+          "meaning": "早晨；上午",
+          "partOfSpeech": "n.",
+          "example": "Good morning, everyone.",
+          "wordOrder": 8
+        },
+        {
+          "id": "tem4-list01-009",
+          "word": "school",
+          "phonetic": "/skuːl/",
+          "meaning": "学校",
+          "partOfSpeech": "n.",
+          "example": "The children go to school by bus.",
+          "wordOrder": 9
+        },
+        {
+          "id": "tem4-list01-010",
+          "word": "family",
+          "phonetic": "/ˈfæməli/",
+          "meaning": "家庭；家人",
+          "partOfSpeech": "n.",
+          "example": "I love my family very much.",
+          "wordOrder": 10
+        },
+        {
+          "id": "tem4-list01-011",
+          "word": "money",
+          "phonetic": "/ˈmʌni/",
+          "meaning": "钱；金钱",
+          "partOfSpeech": "n.",
+          "example": "He saves money every month.",
+          "wordOrder": 11
+        },
+        {
+          "id": "tem4-list01-012",
+          "word": "time",
+          "phonetic": "/taɪm/",
+          "meaning": "时间；时刻",
+          "partOfSpeech": "n.",
+          "example": "What time is it now?",
+          "wordOrder": 12
+        },
+        {
+          "id": "tem4-list01-013",
+          "word": "work",
+          "phonetic": "/wɜːrk/",
+          "meaning": "工作；劳动",
+          "partOfSpeech": "n./v.",
+          "example": "She works in a hospital.",
+          "wordOrder": 13
+        },
+        {
+          "id": "tem4-list01-014",
+          "word": "name",
+          "phonetic": "/neɪm/",
+          "meaning": "名字；名称",
+          "partOfSpeech": "n.",
+          "example": "May I have your name, please?",
+          "wordOrder": 14
+        },
+        {
+          "id": "tem4-list01-015",
+          "word": "city",
+          "phonetic": "/ˈsɪti/",
+          "meaning": "城市",
+          "partOfSpeech": "n.",
+          "example": "Beijing is a very big city.",
+          "wordOrder": 15
+        },
+        {
+          "id": "tem4-list01-016",
+          "word": "love",
+          "phonetic": "/lʌv/",
+          "meaning": "爱；热爱",
+          "partOfSpeech": "v./n.",
+          "example": "I love learning English.",
+          "wordOrder": 16
+        },
+        {
+          "id": "tem4-list01-017",
+          "word": "sleep",
+          "phonetic": "/sliːp/",
+          "meaning": "睡觉",
+          "partOfSpeech": "v.",
+          "example": "I sleep eight hours every day.",
+          "wordOrder": 17
+        },
+        {
+          "id": "tem4-list01-018",
+          "word": "breakfast",
+          "phonetic": "/ˈbrekfəst/",
+          "meaning": "早餐",
+          "partOfSpeech": "n.",
+          "example": "Breakfast is the most important meal.",
+          "wordOrder": 18
+        },
+        {
+          "id": "tem4-list01-019",
+          "word": "rain",
+          "phonetic": "/reɪn/",
+          "meaning": "雨；下雨",
+          "partOfSpeech": "n./v.",
+          "example": "It often rains in spring.",
+          "wordOrder": 19
+        },
+        {
+          "id": "tem4-list01-020",
+          "word": "road",
+          "phonetic": "/roʊd/",
+          "meaning": "道路；公路",
+          "partOfSpeech": "n.",
+          "example": "The road to the village is narrow.",
+          "wordOrder": 20
+        }
+      ]
+    },
+    {
+      "id": "tem4-list-02",
+      "name": "List 02",
+      "order": 2,
+      "words": [
+        {
+          "id": "tem4-list02-001",
+          "word": "travel",
+          "phonetic": "/ˈtrævəl/",
+          "meaning": "旅行",
+          "partOfSpeech": "v.",
+          "example": "We traveled to Japan last summer.",
+          "wordOrder": 1
+        },
+        {
+          "id": "tem4-list02-002",
+          "word": "decide",
+          "phonetic": "/dɪˈsaɪd/",
+          "meaning": "决定",
+          "partOfSpeech": "v.",
+          "example": "I can't decide what to eat for dinner.",
+          "wordOrder": 2
+        },
+        {
+          "id": "tem4-list02-003",
+          "word": "improve",
+          "phonetic": "/ɪmˈpruːv/",
+          "meaning": "改进；提高",
+          "partOfSpeech": "v.",
+          "example": "Reading helps improve your vocabulary.",
+          "wordOrder": 3
+        },
+        {
+          "id": "tem4-list02-004",
+          "word": "because",
+          "phonetic": "/bɪˈkɔːz/",
+          "meaning": "因为",
+          "partOfSpeech": "conj.",
+          "example": "I was late because the bus was slow.",
+          "wordOrder": 4
+        },
+        {
+          "id": "tem4-list02-005",
+          "word": "different",
+          "phonetic": "/ˈdɪfrənt/",
+          "meaning": "不同的",
+          "partOfSpeech": "adj.",
+          "example": "We have different opinions about the plan.",
+          "wordOrder": 5
+        },
+        {
+          "id": "tem4-list02-006",
+          "word": "interesting",
+          "phonetic": "/ˈɪntrəstɪŋ/",
+          "meaning": "有趣的",
+          "partOfSpeech": "adj.",
+          "example": "This is an interesting story.",
+          "wordOrder": 6
+        },
+        {
+          "id": "tem4-list02-007",
+          "word": "remember",
+          "phonetic": "/rɪˈmembər/",
+          "meaning": "记得；记住",
+          "partOfSpeech": "v.",
+          "example": "Remember to lock the door before you leave.",
+          "wordOrder": 7
+        },
+        {
+          "id": "tem4-list02-008",
+          "word": "weather",
+          "phonetic": "/ˈweðər/",
+          "meaning": "天气",
+          "partOfSpeech": "n.",
+          "example": "The weather is really nice today.",
+          "wordOrder": 8
+        },
+        {
+          "id": "tem4-list02-009",
+          "word": "health",
+          "phonetic": "/helθ/",
+          "meaning": "健康",
+          "partOfSpeech": "n.",
+          "example": "Eating well is good for your health.",
+          "wordOrder": 9
+        },
+        {
+          "id": "tem4-list02-010",
+          "word": "experience",
+          "phonetic": "/ɪkˈspɪriəns/",
+          "meaning": "经验；经历",
+          "partOfSpeech": "n.",
+          "example": "She has five years of teaching experience.",
+          "wordOrder": 10
+        },
+        {
+          "id": "tem4-list02-011",
+          "word": "important",
+          "phonetic": "/ɪmˈpɔːrtnt/",
+          "meaning": "重要的",
+          "partOfSpeech": "adj.",
+          "example": "Sleep is important for children.",
+          "wordOrder": 11
+        },
+        {
+          "id": "tem4-list02-012",
+          "word": "believe",
+          "phonetic": "/bɪˈliːv/",
+          "meaning": "相信；认为",
+          "partOfSpeech": "v.",
+          "example": "I believe in myself.",
+          "wordOrder": 12
+        },
+        {
+          "id": "tem4-list02-013",
+          "word": "borrow",
+          "phonetic": "/ˈbɔːroʊ/",
+          "meaning": "借（入）",
+          "partOfSpeech": "v.",
+          "example": "Can I borrow your pen for a minute?",
+          "wordOrder": 13
+        },
+        {
+          "id": "tem4-list02-014",
+          "word": "choose",
+          "phonetic": "/tʃuːz/",
+          "meaning": "选择",
+          "partOfSpeech": "v.",
+          "example": "You can choose any color you like.",
+          "wordOrder": 14
+        },
+        {
+          "id": "tem4-list02-015",
+          "word": "difficult",
+          "phonetic": "/ˈdɪfɪkəlt/",
+          "meaning": "困难的",
+          "partOfSpeech": "adj.",
+          "example": "The exam was more difficult than I expected.",
+          "wordOrder": 15
+        },
+        {
+          "id": "tem4-list02-016",
+          "word": "environment",
+          "phonetic": "/ɪnˈvaɪrənmənt/",
+          "meaning": "环境",
+          "partOfSpeech": "n.",
+          "example": "We should protect the environment.",
+          "wordOrder": 16
+        },
+        {
+          "id": "tem4-list02-017",
+          "word": "knowledge",
+          "phonetic": "/ˈnɑːlɪdʒ/",
+          "meaning": "知识",
+          "partOfSpeech": "n.",
+          "example": "Knowledge is power.",
+          "wordOrder": 17
+        },
+        {
+          "id": "tem4-list02-018",
+          "word": "market",
+          "phonetic": "/ˈmɑrkɪt/",
+          "meaning": "市场；集市",
+          "partOfSpeech": "n.",
+          "example": "She buys vegetables at the market.",
+          "wordOrder": 18
+        },
+        {
+          "id": "tem4-list02-019",
+          "word": "mistake",
+          "phonetic": "/mɪˈsteɪk/",
+          "meaning": "错误",
+          "partOfSpeech": "n.",
+          "example": "Everyone makes mistakes, and that's okay.",
+          "wordOrder": 19
+        },
+        {
+          "id": "tem4-list02-020",
+          "word": "neighbor",
+          "phonetic": "/ˈneɪbər/",
+          "meaning": "邻居",
+          "partOfSpeech": "n.",
+          "example": "Our neighbors are very friendly.",
+          "wordOrder": 20
+        }
+      ]
+    },
+    {
+      "id": "tem4-list-03",
+      "name": "List 03",
+      "order": 3,
+      "words": [
+        {
+          "id": "tem4-list03-001",
+          "word": "achieve",
+          "phonetic": "/əˈtʃiːv/",
+          "meaning": "实现；达成",
+          "partOfSpeech": "v.",
+          "example": "She worked hard to achieve her goals.",
+          "wordOrder": 1
+        },
+        {
+          "id": "tem4-list03-002",
+          "word": "afford",
+          "phonetic": "/əˈfɔːrd/",
+          "meaning": "负担得起",
+          "partOfSpeech": "v.",
+          "example": "We can't afford a new car right now.",
+          "wordOrder": 2
+        },
+        {
+          "id": "tem4-list03-003",
+          "word": "argue",
+          "phonetic": "/ˈɑːrɡjuː/",
+          "meaning": "争论",
+          "partOfSpeech": "v.",
+          "example": "They argued about the movie for an hour.",
+          "wordOrder": 3
+        },
+        {
+          "id": "tem4-list03-004",
+          "word": "benefit",
+          "phonetic": "/ˈbenɪfɪt/",
+          "meaning": "好处；利益",
+          "partOfSpeech": "n.",
+          "example": "There are many benefits of regular exercise.",
+          "wordOrder": 4
+        },
+        {
+          "id": "tem4-list03-005",
+          "word": "communicate",
+          "phonetic": "/kəˈmjunɪkeɪt/",
+          "meaning": "交流；沟通",
+          "partOfSpeech": "v.",
+          "example": "Good communication is the key to a great team.",
+          "wordOrder": 5
+        },
+        {
+          "id": "tem4-list03-006",
+          "word": "curious",
+          "phonetic": "/ˈkjʊriəs/",
+          "meaning": "好奇的",
+          "partOfSpeech": "adj.",
+          "example": "Children are naturally curious about the world.",
+          "wordOrder": 6
+        },
+        {
+          "id": "tem4-list03-007",
+          "word": "develop",
+          "phonetic": "/dɪˈveləp/",
+          "meaning": "发展；培养",
+          "partOfSpeech": "v.",
+          "example": "This app helps you develop good habits.",
+          "wordOrder": 7
+        },
+        {
+          "id": "tem4-list03-008",
+          "word": "encourage",
+          "phonetic": "/ɪnˈkɜːrɪdʒ/",
+          "meaning": "鼓励",
+          "partOfSpeech": "v.",
+          "example": "My teacher always encourages me to speak English.",
+          "wordOrder": 8
+        },
+        {
+          "id": "tem4-list03-009",
+          "word": "escape",
+          "phonetic": "/ɪˈskeɪp/",
+          "meaning": "逃跑；逃脱",
+          "partOfSpeech": "v.",
+          "example": "The animals tried to escape from the cage.",
+          "wordOrder": 9
+        },
+        {
+          "id": "tem4-list03-010",
+          "word": "familiar",
+          "phonetic": "/fəˈmær/",
+          "meaning": "熟悉的",
+          "partOfSpeech": "adj.",
+          "example": "This song is familiar to everyone.",
+          "wordOrder": 10
+        },
+        {
+          "id": "tem4-list03-011",
+          "word": "habit",
+          "phonetic": "/ˈhæbɪt/",
+          "meaning": "习惯",
+          "partOfSpeech": "n.",
+          "example": "Reading before bed is a good habit.",
+          "wordOrder": 11
+        },
+        {
+          "id": "tem4-list03-012",
+          "word": "influence",
+          "phonetic": "/ˈɪnfluəns/",
+          "meaning": "影响",
+          "partOfSpeech": "n./v.",
+          "example": "Music has a great influence on our mood.",
+          "wordOrder": 12
+        },
+        {
+          "id": "tem4-list03-013",
+          "word": "journey",
+          "phonetic": "/ˈdʒɜːrni/",
+          "meaning": "旅程；行程",
+          "partOfSpeech": "n.",
+          "example": "Life is a journey, not a race.",
+          "wordOrder": 13
+        },
+        {
+          "id": "tem4-list03-014",
+          "word": "lazy",
+          "phonetic": "/ˈleɪzi/",
+          "meaning": "懒惰的",
+          "partOfSpeech": "adj.",
+          "example": "Don't be lazy. Start studying now.",
+          "wordOrder": 14
+        },
+        {
+          "id": "tem4-list03-015",
+          "word": "manage",
+          "phonetic": "/ˈmænɪdʒ/",
+          "meaning": "管理；设法做到",
+          "partOfSpeech": "v.",
+          "example": "He manages a team of ten people.",
+          "wordOrder": 15
+        },
+        {
+          "id": "tem4-list03-016",
+          "word": "opinion",
+          "phonetic": "/oʊˈpɪnjən/",
+          "meaning": "意见；看法",
+          "partOfSpeech": "n.",
+          "example": "In my opinion, the plan will work.",
+          "wordOrder": 16
+        },
+        {
+          "id": "tem4-list03-017",
+          "word": "patience",
+          "phonetic": "/ˈpeɪʃns/",
+          "meaning": "耐心",
+          "partOfSpeech": "n.",
+          "example": "Learning a language takes a lot of patience.",
+          "wordOrder": 17
+        },
+        {
+          "id": "tem4-list03-018",
+          "word": "practice",
+          "phonetic": "/ˈpræktɪs/",
+          "meaning": "练习；实践",
+          "partOfSpeech": "n./v.",
+          "example": "Daily practice is the best way to improve.",
+          "wordOrder": 18
+        },
+        {
+          "id": "tem4-list03-019",
+          "word": "refuse",
+          "phonetic": "/rɪˈfjuz/",
+          "meaning": "拒绝",
+          "partOfSpeech": "v.",
+          "example": "She refused to answer the question.",
+          "wordOrder": 19
+        },
+        {
+          "id": "tem4-list03-020",
+          "word": "suggest",
+          "phonetic": "/səˈdʒest/",
+          "meaning": "建议",
+          "partOfSpeech": "v.",
+          "example": "I suggest we leave early to avoid the traffic.",
+          "wordOrder": 20
+        }
+      ]
+    }
+  ]
+}

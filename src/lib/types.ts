@@ -3,6 +3,7 @@
 export interface Book {
   id: string
   name: string
+  /** 内置词库（来自 public/vocabulary/*.json，只读） */
   builtIn?: boolean
 }
 
@@ -11,6 +12,7 @@ export interface VocaList {
   bookId: string
   name: string
   listOrder: number
+  builtIn?: boolean
 }
 
 export interface Word {
@@ -26,6 +28,8 @@ export interface Word {
   exampleZh: string
   custom?: boolean
   favorite?: boolean
+  /** 内置词库单词（只读） */
+  builtIn?: boolean
 }
 
 /* ─────────────────────── 学习进度 ─────────────────────── */
@@ -102,4 +106,9 @@ export interface VocaState {
   }
   /** key: yyyy-mm-dd */
   activity: Record<string, DayStat>
+  /** 内置词库加载状态（不持久化，每次启动从 JSON 读取） */
+  builtIn: {
+    loaded: boolean
+    error: string | null
+  }
 }
