@@ -9,7 +9,7 @@
 export interface VocabularyIndexEntry {
   id: string
   name: string
-  /** JSON 文件地址，如 /vocabulary/tem4.json */
+  /** JSON 文件地址，相对站点根，如 vocabulary/tem4.json */
   file: string
 }
 

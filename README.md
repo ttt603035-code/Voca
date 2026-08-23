@@ -69,7 +69,18 @@ Words（单词）
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # 类型检查 + 生产构建
+npm run preview  # 预览生产构建
 ```
+
+## 部署
+
+构建产物是纯静态站点（`dist/`），可放到任意静态托管：
+
+- **GitHub Pages / 任意子路径**：`vite.config.ts` 使用 `base: "./"`，路由为 `HashRouter`（`/#/words`），刷新不会 404。
+- **Vercel**：根目录已含 `vercel.json` SPA rewrite。
+- **Netlify**：根目录已含 `netlify.toml` 与 `public/_redirects`。
+
+用户数据走安全 `localStorage` 包装；隐私模式或存储不可用时降级为内存态，避免白屏。
 
 ## 项目结构
 
@@ -94,7 +105,8 @@ src/
 │   ├── i18n.ts             # useT() + 时长/日期格式化
 │   ├── accents.ts          # 主题色预设
 │   ├── srs.ts              # 间隔重复（简化版 SM-2）
-│   └── speech.ts           # TTS
+│   ├── speech.ts           # TTS
+│   └── storage.ts          # 安全 localStorage（隐私模式降级）
 ├── store/voca-context.tsx  # 全局状态（用户数据持久化 + 内置词库异步合并 + 旧数据迁移）
 └── pages/                  # today / words / book / list / favorites /
                             # review / insights / similar / mistakes /
