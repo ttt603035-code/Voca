@@ -69,7 +69,7 @@ function buildQuestions(stateWords: Word[], count: number, mode: Mode): Question
 }
 
 export function QuizPage() {
-  const { state, recordQuizAnswer } = useVoca()
+  const { state, recordQuizAnswer, recordTime } = useVoca()
   const [count, setCount] = React.useState("10")
   const [mode, setMode] = React.useState<Mode>("word2meaning")
 
@@ -80,12 +80,28 @@ export function QuizPage() {
   const [done, setDone] = React.useState(false)
   const advanceTimer = React.useRef<number | null>(null)
 
+  // 学习时长统计
+  const lastTickRef = React.useRef(0)
+  const flushTime = React.useCallback(() => {
+    const now = Date.now()
+    const delta = (now - lastTickRef.current) / 1000
+    if (delta >= 1) {
+      recordTime(delta)
+      lastTickRef.current = now
+    }
+  }, [recordTime])
+
   React.useEffect(
     () => () => {
       if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current)
+      flushTime()
     },
-    [],
+    [flushTime],
   )
+
+  React.useEffect(() => {
+    if (done) flushTime()
+  }, [done, flushTime])
 
   const goNext = () => {
     if (!questions) return
@@ -105,12 +121,14 @@ export function QuizPage() {
     setPicked(null)
     setAnswered([])
     setDone(false)
+    lastTickRef.current = Date.now()
   }
 
   const current = questions?.[index] ?? null
 
   function pick(option: string) {
     if (!current || picked !== null) return
+    flushTime()
     setPicked(option)
     const correct = option === current.answer
     recordQuizAnswer(current.word.id, correct)

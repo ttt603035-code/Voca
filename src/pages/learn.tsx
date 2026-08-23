@@ -59,11 +59,10 @@ const RATINGS: {
 const MAX_REQUEUE = 2
 
 export function LearnPage() {
-  const { state, rateWord } = useVoca()
+  const { state, rateWord, recordTime } = useVoca()
   const [params] = useSearchParams()
   const focusId = params.get("word")
 
-  const [queue, setQueue] = React.useState<string[] | null>(null)
   const [processed, setProcessed] = React.useState(0)
   const [flipped, setFlipped] = React.useState(false)
   const [requeues, setRequeues] = React.useState<Record<string, number>>({})
@@ -75,44 +74,67 @@ export function LearnPage() {
     easy: 0,
   })
 
+  // 学习时长统计：记录上次结算的时间点
+  const lastTickRef = React.useRef(0)
+  const flushTime = React.useCallback(() => {
+    const now = Date.now()
+    const delta = (now - lastTickRef.current) / 1000
+    if (delta >= 1) {
+      recordTime(delta)
+      lastTickRef.current = now
+    }
+  }, [recordTime])
+
+  React.useEffect(() => () => flushTime(), [flushTime])
+
   const wordMap = React.useMemo(
     () => new Map(state.words.map((w) => [w.id, w])),
     [state.words],
   )
 
   // 构建学习队列：到期待复习 + 新单词
+  const buildQueue = React.useCallback(
+    (initial?: string) => {
+      if (initial && wordMap.has(initial)) return [initial]
+      const due = dueWords(state).slice(0, 30).map((w) => w.id)
+      const fresh = shuffle(newWords(state).map((w) => w.id)).slice(
+        0,
+        state.settings.dailyGoal,
+      )
+      return [...due, ...fresh]
+    },
+    [state, wordMap],
+  )
+
+  // 首次渲染即构建队列，避免闪烁
+  const [queue, setQueue] = React.useState<string[]>(() =>
+    buildQueue(focusId ?? undefined),
+  )
+
   const startSession = React.useCallback(
     (initial?: string) => {
-      if (initial && wordMap.has(initial)) {
-        setQueue([initial])
-      } else {
-        const due = dueWords(state).slice(0, 30).map((w) => w.id)
-        const fresh = shuffle(newWords(state).map((w) => w.id)).slice(
-          0,
-          state.settings.dailyGoal,
-        )
-        setQueue([...due, ...fresh])
-      }
+      setQueue(buildQueue(initial))
       setProcessed(0)
       setFlipped(false)
       setRequeues({})
       setFinished(false)
       setStats({ again: 0, hard: 0, good: 0, easy: 0 })
+      lastTickRef.current = Date.now()
     },
-    [state, wordMap],
+    [buildQueue],
   )
 
-  // 首次进入或词库变化后自动开一轮
+  // 本轮结束时结算剩余时长
   React.useEffect(() => {
-    if (queue === null) startSession(focusId ?? undefined)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (finished) flushTime()
+  }, [finished, flushTime])
 
   const currentId = finished ? null : (queue?.[processed] ?? null)
   const word = currentId ? (wordMap.get(currentId) ?? null) : null
 
   function handleRate(rating: Rating) {
     if (!currentId || !flipped || !queue) return
+    flushTime()
     rateWord(currentId, rating)
     setStats((s) => ({ ...s, [rating]: s[rating] + 1 }))
     setFlipped(false)

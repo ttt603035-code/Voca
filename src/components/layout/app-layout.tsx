@@ -1,149 +1,201 @@
-import {
-  BarChart3,
-  BookOpen,
-  Brain,
-  GraduationCap,
-  Layers,
-  LayoutDashboard,
-  Moon,
-  Monitor,
-  Sun,
-} from "lucide-react"
-import { NavLink, Outlet } from "react-router-dom"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { useTheme } from "@/components/theme-provider"
+import { Menu, X } from "lucide-react"
+import * as React from "react"
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
+import { applyAccent } from "@/lib/accents"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { useVoca } from "@/store/voca-context"
 
-const NAV_ITEMS = [
-  { to: "/", label: "首页", icon: LayoutDashboard, end: true },
-  { to: "/words", label: "单词本", icon: BookOpen },
-  { to: "/learn", label: "卡片学习", icon: Layers },
-  { to: "/quiz", label: "快速测试", icon: Brain },
-  { to: "/progress", label: "学习进度", icon: BarChart3 },
+interface NavItem {
+  to: string
+  label: string
+  key: string
+  end?: boolean
+}
+
+interface NavSection {
+  title: string
+  items: NavItem[]
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: "计划",
+    items: [{ to: "/", label: "主页", key: "H", end: true }],
+  },
+  {
+    title: "练习",
+    items: [
+      { to: "/words", label: "单词本", key: "W" },
+      { to: "/learn", label: "卡片学习", key: "C" },
+      { to: "/quiz", label: "快速测试", key: "Q" },
+      { to: "/confusables", label: "近义词辨析", key: "N" },
+    ],
+  },
+  {
+    title: "统计",
+    items: [
+      { to: "/progress", label: "学习进度", key: "P" },
+      { to: "/trends", label: "学习趋势", key: "T" },
+    ],
+  },
+  {
+    title: "系统",
+    items: [{ to: "/settings", label: "设置", key: "S" }],
+  },
 ]
 
-function Brand() {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <GraduationCap className="size-4.5" />
-      </div>
-      <div className="leading-tight">
-        <div className="text-sm font-semibold">Voca</div>
-        <div className="text-[11px] text-muted-foreground">英语词汇学习</div>
-      </div>
-    </div>
-  )
-}
+const KEY_TO_ROUTE = Object.fromEntries(
+  NAV_SECTIONS.flatMap((s) => s.items).map((i) => [i.key, i.to]),
+)
 
-function ThemeMenu({ align = "end" }: { align?: "start" | "end" }) {
-  const { theme, setTheme } = useTheme()
-  const options = [
-    { value: "light", label: "浅色", icon: Sun },
-    { value: "dark", label: "深色", icon: Moon },
-    { value: "system", label: "跟随系统", icon: Monitor },
-  ] as const
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-9">
-          {theme === "dark" ? (
-            <Moon className="size-4" />
-          ) : theme === "light" ? (
-            <Sun className="size-4" />
-          ) : (
-            <Monitor className="size-4" />
-          )}
-          <span className="sr-only">切换主题</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align={align}>
-        {options.map((opt) => (
-          <DropdownMenuItem key={opt.value} onClick={() => setTheme(opt.value)}>
-            <opt.icon className="size-4" />
-            {opt.label}
-            {theme === opt.value && <span className="ml-auto text-primary">✓</span>}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
+const PAGE_TITLES: [string, string][] = [
+  ["/words", "单词本"],
+  ["/learn", "卡片学习"],
+  ["/quiz", "快速测试"],
+  ["/confusables", "近义词辨析"],
+  ["/progress", "学习进度"],
+  ["/trends", "学习趋势"],
+  ["/settings", "设置"],
+]
 
-function navClass(isActive: boolean) {
-  return cn(
-    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-    isActive
-      ? "bg-primary/10 text-primary"
-      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-  )
+/** 同步主题色 CSS 变量 */
+function AccentSync() {
+  const { state } = useVoca()
+  const accentId = state.settings.accentId
+  React.useEffect(() => {
+    applyAccent(accentId)
+  }, [accentId])
+  return null
 }
 
 export function AppLayout() {
+  const [drawerOpen, setDrawerOpen] = React.useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // 切换页面时关闭抽屉
+  React.useEffect(() => {
+    setDrawerOpen(false)
+  }, [location.pathname])
+
+  // 键盘快捷键（H / W / C / Q / N / P / T / S）
+  React.useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const target = e.target as HTMLElement
+      if (
+        target.closest(
+          "input, textarea, select, [contenteditable='true'], [role='dialog']",
+        )
+      ) {
+        return
+      }
+      const route = KEY_TO_ROUTE[e.key.toUpperCase()]
+      if (route) navigate(route)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [navigate])
+
+  const title =
+    PAGE_TITLES.find(([p]) => location.pathname.startsWith(p))?.[1] ?? "主页"
+
   return (
     <div className="min-h-screen">
-      {/* 桌面端侧边栏 */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r bg-card lg:flex">
-        <div className="px-5 py-5">
-          <Brand />
-        </div>
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) => navClass(isActive)}
-            >
-              <item.icon className="size-4.5 shrink-0" />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="flex items-center justify-between border-t px-5 py-3">
-          <span className="text-xs text-muted-foreground">每天进步一点点</span>
-          <ThemeMenu align="end" />
-        </div>
-      </aside>
+      <AccentSync />
 
-      {/* 移动端顶栏 */}
-      <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur lg:hidden">
-        <div className="flex items-center justify-between px-4 py-3">
-          <Brand />
-          <ThemeMenu align="end" />
+      {/* 顶栏 */}
+      <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
+        <div className="mx-auto flex h-14 w-full max-w-4xl items-center gap-3 px-4 sm:px-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="打开目录"
+          >
+            <Menu className="size-5" />
+          </Button>
+          <h1 className="text-base font-semibold">{title}</h1>
         </div>
-        <nav className="flex gap-1 overflow-x-auto px-3 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium",
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-accent",
-                )
-              }
-            >
-              <item.icon className="size-4" />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
       </header>
 
-      <main className="lg:pl-60">
-        <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <Outlet />
-        </div>
+      {/* 左侧抽屉目录（P1 风格） */}
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="left" className="w-[300px] gap-0 overflow-y-auto p-5 sm:max-w-[320px]">
+          <SheetTitle className="sr-only">目录</SheetTitle>
+          <div className="mb-5 flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              目录
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="关闭目录"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+
+          <nav className="space-y-5">
+            {NAV_SECTIONS.map((section) => (
+              <div key={section.title} className="space-y-2">
+                <div className="px-1 text-xs font-medium text-muted-foreground">
+                  {section.title}
+                </div>
+                <div className="space-y-0.5 rounded-xl border bg-card p-1.5 shadow-sm">
+                  {section.items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-foreground/80 hover:bg-accent",
+                        )
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <span
+                            className={cn(
+                              "w-4 text-center text-xs font-semibold tabular-nums",
+                              isActive
+                                ? "text-primary-foreground/80"
+                                : "text-muted-foreground/70",
+                            )}
+                          >
+                            {item.key}
+                          </span>
+                          {item.label}
+                        </>
+                      )}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
+
+          <p className="mt-6 px-1 text-[11px] leading-relaxed text-muted-foreground">
+            提示：在页面任意位置按字母键（H / W / C / Q / N / P / T / S）可快速跳转。
+          </p>
+        </SheetContent>
+      </Sheet>
+
+      <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:py-8">
+        <Outlet />
       </main>
     </div>
   )

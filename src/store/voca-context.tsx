@@ -2,6 +2,7 @@ import * as React from "react"
 import { SEED_WORDS } from "@/lib/seed-words"
 import { defaultProgress, rateProgress, todayStr } from "@/lib/srs"
 import type {
+  DayStat,
   Rating,
   VocaState,
   Word,
@@ -14,8 +15,23 @@ function defaultState(): VocaState {
   return {
     words: SEED_WORDS,
     progress: {},
-    settings: { dailyGoal: 10 },
+    settings: {
+      dailyGoal: 10,
+      accentId: null,
+      geminiKey: "",
+    },
     activity: {},
+  }
+}
+
+function normalizeDay(raw: Partial<DayStat> | undefined): DayStat {
+  const learned = raw?.learned ?? 0
+  const reviewed = raw?.reviewed ?? 0
+  return {
+    reviews: raw?.reviews ?? learned + reviewed,
+    learned,
+    reviewed,
+    seconds: raw?.seconds ?? 0,
   }
 }
 
@@ -27,11 +43,15 @@ function loadState(): VocaState {
       const parsed = JSON.parse(raw) as Partial<VocaState>
       if (parsed && Array.isArray(parsed.words) && parsed.words.length > 0) {
         const base = defaultState()
+        const activity: Record<string, DayStat> = {}
+        for (const [k, v] of Object.entries(parsed.activity ?? {})) {
+          activity[k] = normalizeDay(v)
+        }
         return {
           words: parsed.words,
           progress: parsed.progress ?? {},
           settings: { ...base.settings, ...parsed.settings },
-          activity: parsed.activity ?? {},
+          activity,
         }
       }
     }
@@ -48,8 +68,33 @@ type Action =
   | { type: "reset-progress"; id: string }
   | { type: "rate"; wordId: string; rating: Rating }
   | { type: "quiz-answer"; wordId: string; correct: boolean }
+  | { type: "record-time"; seconds: number }
   | { type: "set-goal"; goal: number }
+  | { type: "set-accent"; id: string | null }
+  | { type: "set-gemini-key"; key: string }
   | { type: "reset-all" }
+
+function touchDay(
+  activity: Record<string, DayStat>,
+  today: string,
+  patch: Partial<DayStat>,
+): Record<string, DayStat> {
+  const day = activity[today] ?? {
+    reviews: 0,
+    learned: 0,
+    reviewed: 0,
+    seconds: 0,
+  }
+  return {
+    ...activity,
+    [today]: {
+      reviews: day.reviews + (patch.learned ?? 0) + (patch.reviewed ?? 0),
+      learned: day.learned + (patch.learned ?? 0),
+      reviewed: day.reviewed + (patch.reviewed ?? 0),
+      seconds: day.seconds + (patch.seconds ?? 0),
+    },
+  }
+}
 
 function reducer(state: VocaState, action: Action): VocaState {
   switch (action.type) {
@@ -81,20 +126,20 @@ function reducer(state: VocaState, action: Action): VocaState {
     case "rate": {
       const today = todayStr()
       const prev = state.progress[action.wordId] ?? defaultProgress(action.wordId)
-      const next = rateProgress(prev, action.rating, today)
-      const day = state.activity[today] ?? { reviews: 0, correct: 0, wrong: 0 }
+      const rated = rateProgress(prev, action.rating, today)
+      const next = {
+        ...rated,
+        correct: rated.correct + (action.rating !== "again" ? 1 : 0),
+        wrong: rated.wrong + (action.rating === "again" ? 1 : 0),
+      }
+      const learned = prev.reps === 0
       return {
         ...state,
         progress: { ...state.progress, [action.wordId]: next },
-        activity: {
-          ...state.activity,
-          [today]: {
-            ...day,
-            reviews: day.reviews + 1,
-            correct: day.correct + (action.rating !== "again" ? 1 : 0),
-            wrong: day.wrong + (action.rating === "again" ? 1 : 0),
-          },
-        },
+        activity: touchDay(state.activity, today, {
+          learned: learned ? 1 : 0,
+          reviewed: learned ? 0 : 1,
+        }),
       }
     }
     case "quiz-answer": {
@@ -105,21 +150,24 @@ function reducer(state: VocaState, action: Action): VocaState {
         correct: prev.correct + (action.correct ? 1 : 0),
         wrong: prev.wrong + (action.correct ? 0 : 1),
       }
-      const day = state.activity[today] ?? { reviews: 0, correct: 0, wrong: 0 }
+      const learned = prev.reps === 0
       return {
         ...state,
         progress: { ...state.progress, [action.wordId]: next },
-        activity: {
-          ...state.activity,
-          [today]: {
-            ...day,
-            reviews: day.reviews + 1,
-            correct: day.correct + (action.correct ? 1 : 0),
-            wrong: day.wrong + (action.correct ? 0 : 1),
-          },
-        },
+        activity: touchDay(state.activity, today, {
+          learned: learned ? 1 : 0,
+          reviewed: learned ? 0 : 1,
+        }),
       }
     }
+    case "record-time":
+      if (action.seconds <= 0) return state
+      return {
+        ...state,
+        activity: touchDay(state.activity, todayStr(), {
+          seconds: Math.round(action.seconds),
+        }),
+      }
     case "set-goal":
       return {
         ...state,
@@ -127,6 +175,16 @@ function reducer(state: VocaState, action: Action): VocaState {
           ...state.settings,
           dailyGoal: Math.max(1, Math.min(100, Math.round(action.goal))),
         },
+      }
+    case "set-accent":
+      return {
+        ...state,
+        settings: { ...state.settings, accentId: action.id },
+      }
+    case "set-gemini-key":
+      return {
+        ...state,
+        settings: { ...state.settings, geminiKey: action.key.trim() },
       }
     case "reset-all":
       return defaultState()
@@ -143,7 +201,10 @@ interface VocaContextValue {
   resetWordProgress: (id: string) => void
   rateWord: (wordId: string, rating: Rating) => void
   recordQuizAnswer: (wordId: string, correct: boolean) => void
+  recordTime: (seconds: number) => void
   setDailyGoal: (goal: number) => void
+  setAccent: (id: string | null) => void
+  setGeminiKey: (key: string) => void
   resetAll: () => void
 }
 
@@ -171,11 +232,13 @@ export function VocaProvider({
       updateWord: (id, word) => dispatch({ type: "update-word", id, word }),
       deleteWord: (id) => dispatch({ type: "delete-word", id }),
       resetWordProgress: (id) => dispatch({ type: "reset-progress", id }),
-      rateWord: (wordId, rating) =>
-        dispatch({ type: "rate", wordId, rating }),
+      rateWord: (wordId, rating) => dispatch({ type: "rate", wordId, rating }),
       recordQuizAnswer: (wordId, correct) =>
         dispatch({ type: "quiz-answer", wordId, correct }),
+      recordTime: (seconds) => dispatch({ type: "record-time", seconds }),
       setDailyGoal: (goal) => dispatch({ type: "set-goal", goal }),
+      setAccent: (id) => dispatch({ type: "set-accent", id }),
+      setGeminiKey: (key) => dispatch({ type: "set-gemini-key", key }),
       resetAll: () => dispatch({ type: "reset-all" }),
     }),
     [state],
