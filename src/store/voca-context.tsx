@@ -1,5 +1,6 @@
 import * as React from "react"
 import { SEED_SIMILAR_GROUPS, linkGroupWordIds } from "@/lib/confusables"
+import { safeStorage } from "@/lib/storage"
 import { loadAllBooks } from "@/services/vocabulary"
 import { defaultProgress, rateProgress, todayStr } from "@/lib/srs"
 import type { ImportPayload } from "@/lib/import-vocab"
@@ -271,7 +272,7 @@ function loadState(): VocaState {
     return { ...defaultState(), builtIn: { loaded: false, error: null } }
   }
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const raw = safeStorage.get(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (parsed && Array.isArray(parsed.words) && parsed.words.length >= 0) {
@@ -329,7 +330,7 @@ function persist(state: VocaState) {
       mistakeLog: state.mistakeLog,
       sessions: state.sessions,
     }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+    safeStorage.set(STORAGE_KEY, JSON.stringify(user))
   } catch {
     // 存储不可用时忽略
   }

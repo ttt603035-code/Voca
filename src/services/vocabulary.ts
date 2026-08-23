@@ -18,7 +18,17 @@ import type {
   VocabularyIndexEntry,
 } from "@/types/vocabulary"
 
-const INDEX_URL = "/vocabulary/index.json"
+/**
+ * 将 public/ 资源路径解析为可部署到任意子路径的 URL。
+ * 配合 vite.config.ts 的 `base: "./"`，GitHub Pages 仓库站点也能加载词库。
+ */
+export function publicAsset(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path
+  const base = import.meta.env.BASE_URL || "./"
+  return `${base}${path.replace(/^\//, "")}`
+}
+
+const INDEX_URL = publicAsset("vocabulary/index.json")
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: "no-cache" })
@@ -72,7 +82,7 @@ function normalizeBook(
 
 /** 读取单本词书 */
 export async function fetchBook(entry: VocabularyIndexEntry): Promise<BuiltInBookData> {
-  const raw = await fetchJson<Partial<BuiltInBookData>>(entry.file)
+  const raw = await fetchJson<Partial<BuiltInBookData>>(publicAsset(entry.file))
   return normalizeBook(entry, raw)
 }
 

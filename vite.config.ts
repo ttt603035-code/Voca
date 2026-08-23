@@ -7,6 +7,8 @@ import { defineConfig } from "vite"
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
+  // 相对资源路径：部署到任何子路径（如 GitHub Pages 仓库站点）都能加载
+  base: "./",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

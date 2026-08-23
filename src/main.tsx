@@ -1,6 +1,6 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { BrowserRouter } from "react-router-dom"
+import { HashRouter } from "react-router-dom"
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import App from "./App"
@@ -10,12 +10,12 @@ import { VocaProvider } from "@/store/voca-context"
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="system">
-      <BrowserRouter>
+      <HashRouter>
         <VocaProvider>
           <App />
           <Toaster position="top-center" />
         </VocaProvider>
-      </BrowserRouter>
+      </HashRouter>
     </ThemeProvider>
   </StrictMode>,
 )
