@@ -41,3 +41,27 @@ export function greetingKey(): LocaleKey {
   if (h < 18) return "goodAfternoon"
   return "goodEvening"
 }
+
+type T = (key: LocaleKey, vars?: Record<string, string | number>) => string
+
+/** 时长格式化：26 分钟 / 42 小时 15 分 · 26m / 42h 15m */
+export function fmtDuration(
+  seconds: number,
+  t: T,
+  lang: "zh" | "en",
+): string {
+  const m = Math.max(0, Math.round(seconds / 60))
+  if (m < 60) return lang === "zh" ? `${m}${t("minWord")}` : `${m}${t("minWord")}`
+  const h = Math.floor(m / 60)
+  const mm = m % 60
+  if (lang === "zh") {
+    return mm > 0 ? `${h}${t("hourWord")}${mm}${t("minWord")}` : `${h}${t("hourWord")}`
+  }
+  return mm > 0 ? `${h}${t("hourWord")} ${mm}${t("minWord")}` : `${h}${t("hourWord")}`
+}
+
+/** MM/DD 短日期 */
+export function fmtShortDate(dateStr: string): string {
+  const [, m, d] = dateStr.split("-")
+  return `${m}/${d}`
+}

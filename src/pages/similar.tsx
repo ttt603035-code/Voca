@@ -1,52 +1,63 @@
-import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Heart, Plus, XCircle } from "lucide-react"
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
   AppleButton,
   EmptyState,
-  GroupHeader,
   InsetGroup,
   LargeTitle,
   ListRow,
   SectionTitle,
 } from "@/components/kit/primitives"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { useT } from "@/lib/i18n"
-import { useSpeak } from "@/lib/speech"
 import { shuffle } from "@/lib/srs"
-import type { SimilarGroup, SimilarWordEntry } from "@/lib/types"
+import type { SimilarCategory, SimilarGroup, SimilarWordEntry } from "@/lib/types"
 import { useVoca } from "@/store/voca-context"
 import { cn } from "@/lib/utils"
+import { useSpeak } from "@/lib/speech"
 
-function buildOptions(group: SimilarGroup, allGroups: SimilarGroup[]): string[] {
-  const own = group.words.map((w) => w.word)
-  const others = shuffle(
-    allGroups
-      .filter((g) => g.id !== group.id)
-      .flatMap((g) => g.words.map((w) => w.word)),
-  ).slice(0, Math.max(0, 4 - own.length))
-  return shuffle([...own, ...others])
+type ScopeRange = "all" | "unmastered" | "mistakes" | "favorites"
+
+function categoryKey(
+  c?: SimilarCategory,
+): "catSpelling" | "catForm" | "catMeaning" | "catCustom" {
+  if (c === "spelling") return "catSpelling"
+  if (c === "form") return "catForm"
+  if (c === "meaning") return "catMeaning"
+  return "catCustom"
 }
 
-/* ─────────────── 对比练习 ─────────────── */
+/* ─────────────── 组内练习 ─────────────── */
 
-function Practice({
-  group,
-  onBack,
-}: {
-  group: SimilarGroup
-  onBack: () => void
-}) {
+function Practice({ group, onBack }: { group: SimilarGroup; onBack: () => void }) {
   const { state } = useVoca()
   const { t } = useT()
   const { speak } = useSpeak()
 
-  // 练习：每组词各一道（听发音看词，选正确释义）
   const [order, setOrder] = React.useState<SimilarWordEntry[]>(() =>
     shuffle(group.words),
   )
-  const [options, setOptions] = React.useState<string[]>(() =>
-    buildOptions(group, state.similarGroups),
-  )
+  const [options, setOptions] = React.useState<string[]>(() => {
+    const own = group.words.map((w) => w.word)
+    const others = shuffle(
+      state.similarGroups
+        .filter((g) => g.id !== group.id)
+        .flatMap((g) => g.words.map((w) => w.word)),
+    ).slice(0, Math.max(0, 4 - own.length))
+    return shuffle([...own, ...others])
+  })
   const [index, setIndex] = React.useState(0)
   const [picked, setPicked] = React.useState<string | null>(null)
   const [results, setResults] = React.useState<
@@ -66,7 +77,16 @@ function Practice({
 
   function restart() {
     setOrder(shuffle(group.words))
-    setOptions(buildOptions(group, state.similarGroups))
+    setOptions(
+      shuffle([
+        ...group.words.map((w) => w.word),
+        ...shuffle(
+          state.similarGroups
+            .filter((g) => g.id !== group.id)
+            .flatMap((g) => g.words.map((w) => w.word)),
+        ).slice(0, Math.max(0, 4 - group.words.length)),
+      ]),
+    )
     setIndex(0)
     setPicked(null)
     setResults([])
@@ -170,7 +190,6 @@ function Practice({
         </span>
       </div>
 
-      {/* 题目：听发音 + 看词性，选正确的释义 */}
       <div className="flex flex-col items-center gap-3 pt-4 text-center">
         <button
           type="button"
@@ -190,9 +209,7 @@ function Practice({
         {current.ipa && (
           <span className="text-[15px] text-muted-foreground">{current.ipa}</span>
         )}
-        <p className="text-[14px] text-muted-foreground">
-          {t("meaningLabel")}
-        </p>
+        <p className="text-[14px] text-muted-foreground">{t("meaningLabel")}</p>
       </div>
 
       <InsetGroup>
@@ -202,8 +219,7 @@ function Practice({
             state.similarGroups
               .flatMap((g) => g.words)
               .find((w) => w.word.toLowerCase() === opt.toLowerCase())
-          const isAnswer =
-            opt.toLowerCase() === current.word.toLowerCase()
+          const isAnswer = opt.toLowerCase() === current.word.toLowerCase()
           const isPicked = opt === picked
           return (
             <ListRow
@@ -258,30 +274,172 @@ function Practice({
   )
 }
 
-/* ─────────────── 词组列表 ─────────────── */
+/* ─────────────── 易混词列表 ─────────────── */
 
 export function SimilarPage() {
-  const { state } = useVoca()
+  const { state, createGroup, toggleGroupFavorite } = useVoca()
   const { t } = useT()
   const navigate = useNavigate()
+  const [category, setCategory] = React.useState<"all" | SimilarCategory>("all")
+  const [newOpen, setNewOpen] = React.useState(false)
+  const [newTitle, setNewTitle] = React.useState("")
+  const [range, setRange] = React.useState<ScopeRange>("all")
+
+  const groups = state.similarGroups.filter(
+    (g) => category === "all" || (g.category ?? "custom") === category,
+  )
+
+  function startPracticeAll() {
+    const params: Record<string, string> = { scope: "similar-all" }
+    if (range !== "all") params.range = range
+    navigate(`/review?${new URLSearchParams(params).toString()}`)
+  }
+
   return (
     <div className="space-y-5">
-      <LargeTitle title={t("similarWords")} />
-      <GroupHeader>{t("similarDesc")}</GroupHeader>
-      <InsetGroup>
-        {state.similarGroups.map((g) => (
-          <ListRow
-            key={g.id}
-            as="button"
-            onClick={() => navigate(`/similar/${g.id}`)}
-            primary={g.title}
-            secondary={t("wordsPlural", { n: g.words.length })}
-            chevron
-          />
-        ))}
-      </InsetGroup>
+      <LargeTitle
+        title={t("similarWords")}
+        back={() => navigate("/words")}
+        actions={
+          <button
+            type="button"
+            onClick={() => setNewOpen(true)}
+            className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary"
+            aria-label={t("newGroup")}
+          >
+            <Plus className="size-5" />
+          </button>
+        }
+      />
+      <GroupHeaderText text={t("similarDesc")} />
+
+      {/* Practice All（整个模块） */}
+      <div className="flex items-center gap-3">
+        <Select
+          value={range}
+          onValueChange={(v) => setRange(v as ScopeRange)}
+        >
+          <SelectTrigger
+            size="sm"
+            className="h-10 rounded-full bg-primary/10 px-4 font-medium text-primary hover:bg-primary/15 dark:bg-primary/15"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("rangeAll")}</SelectItem>
+            <SelectItem value="unmastered">{t("rangeUnmastered")}</SelectItem>
+            <SelectItem value="mistakes">{t("rangeMistakes")}</SelectItem>
+            <SelectItem value="favorites">{t("rangeFavorites")}</SelectItem>
+          </SelectContent>
+        </Select>
+        <button
+          type="button"
+          onClick={startPracticeAll}
+          className="h-10 rounded-full bg-primary px-5 text-[15px] font-medium text-primary-foreground transition-opacity active:opacity-80"
+        >
+          {t("practiceAll")}
+        </button>
+      </div>
+
+      {/* 分类筛选 */}
+      <Select
+        value={category}
+        onValueChange={(v) => setCategory(v as "all" | SimilarCategory)}
+      >
+        <SelectTrigger size="sm">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t("catAll")}</SelectItem>
+          <SelectItem value="spelling">{t("catSpelling")}</SelectItem>
+          <SelectItem value="form">{t("catForm")}</SelectItem>
+          <SelectItem value="meaning">{t("catMeaning")}</SelectItem>
+          <SelectItem value="custom">{t("catCustom")}</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* 词组列表 */}
+      {groups.length > 0 ? (
+        <InsetGroup>
+          {groups.map((g) => (
+            <ListRow
+              key={g.id}
+              as="button"
+              onClick={() => navigate(`/similar/${g.id}`)}
+              primary={
+                <span className="flex items-center gap-2">
+                  {g.title}
+                  <span className="rounded-[5px] bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                    {t(categoryKey(g.category))}
+                  </span>
+                </span>
+              }
+              secondary={t("wordsPlural", { n: g.words.length })}
+              trailing={
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    toggleGroupFavorite(g.id)
+                  }}
+                  aria-label={t("favorite")}
+                  className={cn(
+                    "-mr-2 flex size-8 items-center justify-center rounded-full transition-colors active:bg-foreground/[0.05]",
+                    g.favorite ? "text-[#FF3B30]" : "text-muted-foreground/40",
+                  )}
+                >
+                  <Heart
+                    className="size-[18px]"
+                    fill={g.favorite ? "currentColor" : "none"}
+                  />
+                </button>
+              }
+            />
+          ))}
+        </InsetGroup>
+      ) : (
+        <EmptyState title={t("noData")} description={t("similarDesc")} />
+      )}
+
+      {/* 新建词组 */}
+      <Sheet open={newOpen} onOpenChange={setNewOpen}>
+        <SheetContent
+          side="bottom"
+          className="gap-0 rounded-t-[22px] p-0 pb-[env(safe-area-inset-bottom)]"
+        >
+          <div className="sticky top-0 z-10 flex justify-center bg-background/90 pt-2.5 pb-1 backdrop-blur">
+            <div className="h-1 w-9 rounded-full bg-foreground/20" />
+          </div>
+          <div className="space-y-4 px-5 pt-2 pb-6">
+            <h2 className="text-[20px] font-semibold">{t("newGroup")}</h2>
+            <input
+              className="h-12 w-full rounded-[12px] bg-grouped px-4 text-[16px] outline-none focus:ring-2 focus:ring-ring/40"
+              placeholder={t("groupTitle")}
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              autoFocus
+            />
+            <AppleButton
+              onClick={() => {
+                if (!newTitle.trim()) return
+                createGroup(newTitle)
+                setNewTitle("")
+                setNewOpen(false)
+              }}
+              disabled={!newTitle.trim()}
+            >
+              {t("add")}
+            </AppleButton>
+          </div>
+          <SheetTitle className="sr-only">{t("newGroup")}</SheetTitle>
+        </SheetContent>
+      </Sheet>
     </div>
   )
+}
+
+function GroupHeaderText({ text }: { text: string }) {
+  return <p className="-mt-3 text-[14px] leading-snug text-muted-foreground">{text}</p>
 }
 
 /* ─────────────── 词组对比 ─────────────── */
@@ -289,7 +447,7 @@ export function SimilarPage() {
 export function SimilarGroupPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { state } = useVoca()
+  const { state, toggleGroupFavorite } = useVoca()
   const { t } = useT()
   const { speak } = useSpeak()
   const [practicing, setPracticing] = React.useState(false)
@@ -306,7 +464,9 @@ export function SimilarGroupPage() {
   }
 
   if (practicing) {
-    return <Practice key={group.id} group={group} onBack={() => setPracticing(false)} />
+    return (
+      <Practice key={group.id} group={group} onBack={() => setPracticing(false)} />
+    )
   }
 
   return (
@@ -314,9 +474,25 @@ export function SimilarGroupPage() {
       <LargeTitle
         title={group.title}
         back={() => navigate("/similar")}
+        actions={
+          <button
+            type="button"
+            onClick={() => toggleGroupFavorite(group.id)}
+            aria-label={t("favorite")}
+            className={cn(
+              "flex size-9 items-center justify-center rounded-full transition-colors active:bg-foreground/[0.05]",
+              group.favorite ? "text-[#FF3B30]" : "text-muted-foreground/50",
+            )}
+          >
+            <Heart
+              className="size-[20px]"
+              fill={group.favorite ? "currentColor" : "none"}
+            />
+          </button>
+        }
       />
 
-      {/* 对比布局：iPad 两列，iPhone 堆叠 */}
+      {/* 对比布局：iPad 两列 */}
       <div className="grid gap-3 lg:grid-cols-2">
         {group.words.map((w) => (
           <div key={w.word} className="rounded-[19px] bg-grouped p-5">
@@ -356,7 +532,7 @@ export function SimilarGroupPage() {
 
       {group.words.length >= 2 && (
         <AppleButton onClick={() => setPracticing(true)}>
-          {t("practice")}
+          {t("practiceThisGroup")}
         </AppleButton>
       )}
     </div>

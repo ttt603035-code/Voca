@@ -63,6 +63,23 @@ export interface DayStat {
   seconds: number
 }
 
+/** 一次 Practice / Review 会话记录（供 Insights 趋势使用） */
+export interface SessionRecord {
+  id: string
+  date: string
+  start: string
+  end: string
+  seconds: number
+  /** 范围描述，如 "List 01 · 专四" / "Review" / "Practice All · 专四" */
+  scope: string
+  bookId?: string
+  listId?: string
+  reviewed: number
+  correct: number
+  wrong: number
+  accuracy: number
+}
+
 /* ─────────────────────── 易混词（Similar Words） ─────────────────────── */
 
 export interface SimilarWordEntry {
@@ -75,12 +92,17 @@ export interface SimilarWordEntry {
   wordId?: string
 }
 
+export type SimilarCategory = "spelling" | "form" | "meaning" | "custom"
+
 export interface SimilarGroup {
   id: string
   title: string
   tip?: string
   words: SimilarWordEntry[]
   builtIn?: boolean
+  favorite?: boolean
+  /** 分类：拼写相似 / 词形相似 / 意义混淆 / 用户自建 */
+  category?: SimilarCategory
 }
 
 /* ─────────────────────── 全局状态 ─────────────────────── */
@@ -106,6 +128,10 @@ export interface VocaState {
   }
   /** key: yyyy-mm-dd */
   activity: Record<string, DayStat>
+  /** 错题日志：date → wordId → 当天错误次数 */
+  mistakeLog: Record<string, Record<string, number>>
+  /** 学习会话记录 */
+  sessions: SessionRecord[]
   /** 内置词库加载状态（不持久化，每次启动从 JSON 读取） */
   builtIn: {
     loaded: boolean

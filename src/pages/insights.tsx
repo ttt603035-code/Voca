@@ -5,6 +5,7 @@ import {
   AppleBars,
   AppleStackedBar,
   ChartDot,
+  type BarPoint,
 } from "@/components/kit/charts"
 import {
   GroupHeader,
@@ -21,145 +22,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { addDays, calcStreak, todayStr } from "@/lib/srs"
-import { useT } from "@/lib/i18n"
+import { fmtDuration, useT } from "@/lib/i18n"
+import { buildTrend, pendingCount, trendLabelStep } from "@/lib/trends"
+import { calcStreak, todayStr } from "@/lib/srs"
 import { useVoca } from "@/store/voca-context"
 
-type Range = "day" | "week" | "month" | "year"
-
-const RANGE_KEYS: Record<Range, "rangeDay" | "rangeWeek" | "rangeMonth" | "rangeYear"> = {
-  day: "rangeDay",
-  week: "rangeWeek",
-  month: "rangeMonth",
-  year: "rangeYear",
-}
-
-function fmtDuration(sec: number): string {
-  const m = Math.round(sec / 60)
-  if (m < 60) return `${m}m`
-  const h = Math.floor(m / 60)
-  const mm = m % 60
-  return `${h}h ${String(mm).padStart(2, "0")}m`
-}
-
-const WEEKDAYS_ZH = ["日", "一", "二", "三", "四", "五", "六"]
-const WEEKDAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+type Range = 7 | 30 | 90
 
 export function InsightsPage() {
   const { state } = useVoca()
   const { t, lang } = useT()
   const navigate = useNavigate()
-  const [range, setRange] = React.useState<Range>("week")
+  const [range, setRange] = React.useState<Range>(7)
   const today = todayStr()
-  const weekdays = lang === "zh" ? WEEKDAYS_ZH : WEEKDAYS_EN
 
-  /* 窗口内的每日序列 */
-  const series = React.useMemo(() => {
-    const pts: { date: string; label: string; value?: number }[] = []
-    if (range === "day") {
-      pts.push({ date: today, label: t("today") })
-    } else if (range === "week") {
-      for (let i = 6; i >= 0; i--) {
-        const d = addDays(today, -i)
-        pts.push({
-          date: d,
-          label: i === 0 ? t("today") : weekdays[new Date(`${d}T00:00:00`).getDay()],
-        })
-      }
-    } else if (range === "month") {
-      for (let i = 29; i >= 0; i--) {
-        const d = addDays(today, -i)
-        const dt = new Date(`${d}T00:00:00`)
-        pts.push({ date: d, label: `${dt.getMonth() + 1}/${dt.getDate()}` })
-      }
-    } else {
-      const now = new Date()
-      for (let i = 11; i >= 0; i--) {
-        const dt = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`
-        let total = 0
-        for (const [date, s] of Object.entries(state.activity)) {
-          if (date.slice(0, 7) === key) total += s.reviews
-        }
-        pts.push({
-          date: key,
-          label: `${dt.getMonth() + 1}${lang === "zh" ? "月" : ""}`,
-          value: total,
-        })
-      }
-    }
-    return pts
-  }, [range, today, state.activity, t, weekdays, lang])
-
-  /* 窗口内的指标 */
-  const metrics = React.useMemo(() => {
-    let seconds = 0
-    let reviews = 0
-    let correct = 0
-    let wrong = 0
-
-    if (range === "year") {
-      for (const p of Object.values(state.progress)) {
-        correct += p.correct
-        wrong += p.wrong
-      }
-      for (const s of Object.values(state.activity)) {
-        seconds += s.seconds
-        reviews += s.reviews
-      }
-    } else {
-      for (const pt of series) {
-        const s = state.activity[pt.date]
-        if (s) {
-          seconds += s.seconds
-          reviews += s.reviews
-        }
-      }
-      const seen = new Set(series.map((p) => p.date))
-      for (const p of Object.values(state.progress)) {
-        if (p.lastReviewed && seen.has(p.lastReviewed)) {
-          correct += p.correct
-          wrong += p.wrong
-        }
-      }
-    }
-
-    return {
-      seconds,
-      reviews,
-      accuracy:
-        correct + wrong > 0 ? Math.round((correct / (correct + wrong)) * 100) : null,
-    }
-  }, [range, series, state.activity, state.progress])
-
-  const streak = calcStreak(state.activity)
-
-  /* 图表数据 */
-  const wordBars = series.map((p) => ({
+  const points = buildTrend(state, range, lang === "zh" ? "zh" : "en", t as never)
+  const barData: BarPoint[] = points.map((p) => ({
     label: p.label,
-    value: p.value ?? (state.activity[p.date]?.reviews ?? 0),
+    highlight: p.date === today,
+    segments: [
+      { value: p.learned, className: "bg-[#FF9500]/85" },
+      { value: p.reviewed, className: "bg-[#FF9EBB]/90" },
+      { value: p.pending ?? 0, className: "bg-foreground/[0.12]" },
+    ],
   }))
-  const timeSeries = series.map((p) => {
-    if (p.value !== undefined && range === "year") {
-      const sec = Object.entries(state.activity)
-        .filter(([d]) => d.slice(0, 7) === p.date)
-        .reduce((s, [, v]) => s + v.seconds, 0)
-      return { label: p.label, value: Math.round(sec / 6) / 10 }
+  const timePoints = points.map((p) => ({
+    label: p.label,
+    value: Math.round(((state.activity[p.date]?.seconds ?? 0) / 60) * 10) / 10,
+  }))
+
+  /* 窗口内指标 */
+  const windowDates = new Set(points.filter((p) => p.pending === undefined).map((p) => p.date))
+  let seconds = 0
+  let reviews = 0
+  for (const d of windowDates) {
+    const s = state.activity[d]
+    if (s) {
+      seconds += s.seconds
+      reviews += s.reviews
     }
-    return {
-      label: p.label,
-      value: Math.round(((state.activity[p.date]?.seconds ?? 0) / 60) * 10) / 10,
+  }
+  let correct = 0
+  let wrong = 0
+  for (const p of Object.values(state.progress)) {
+    if (p.lastReviewed && windowDates.has(p.lastReviewed)) {
+      correct += p.correct
+      wrong += p.wrong
     }
-  })
+  }
+  const accuracy = correct + wrong > 0 ? Math.round((correct / (correct + wrong)) * 100) : null
+  const streak = calcStreak(state.activity)
+  const pending = pendingCount(state)
 
   /* 掌握分布 */
   const total = state.words.length
-  const mastered = state.words.filter(
-    (w) => state.progress[w.id]?.status === "mastered",
-  ).length
-  const learning = state.words.filter(
-    (w) => state.progress[w.id]?.status === "learning",
-  ).length
+  const mastered = state.words.filter((w) => state.progress[w.id]?.status === "mastered").length
+  const learning = state.words.filter((w) => state.progress[w.id]?.status === "learning").length
   const fresh = total - mastered - learning
 
   const mistakes = state.words
@@ -168,22 +86,28 @@ export function InsightsPage() {
     .sort((a, b) => b.p!.wrong - a.p!.wrong)
     .slice(0, 3)
 
-  const isDay = range === "day"
-  const todayStat = state.activity[today]
+  const rangeOptions: { value: string; label: string }[] = [
+    { value: "7", label: t("range7") },
+    { value: "30", label: t("range30") },
+    { value: "90", label: t("range90") },
+  ]
 
   return (
     <div className="space-y-7">
       <LargeTitle
         title={t("tabInsights")}
         actions={
-          <Select value={range} onValueChange={(v) => setRange(v as Range)}>
+          <Select
+            value={String(range)}
+            onValueChange={(v) => setRange(Number(v) as Range)}
+          >
             <SelectTrigger size="sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(Object.keys(RANGE_KEYS) as Range[]).map((r) => (
-                <SelectItem key={r} value={r}>
-                  {t(RANGE_KEYS[r])}
+              {rangeOptions.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -191,13 +115,16 @@ export function InsightsPage() {
         }
       />
 
-      {/* 核心指标：2×2 分组 */}
-      <InsetGroup dividers={false} className="grid grid-cols-2 gap-px overflow-hidden">
-        <StatTile label={t("studyTime")} value={fmtDuration(metrics.seconds)} />
-        <StatTile label={t("wordsReviewed")} value={metrics.reviews} />
+      {/* 窗口指标 */}
+      <InsetGroup dividers={false} className="grid grid-cols-2 gap-px">
+        <StatTile label={t("studyTime")} value={fmtDuration(seconds, t, lang)} />
+        <StatTile
+          label={t("wordsReviewed")}
+          value={t("wordsShort", { n: reviews })}
+        />
         <StatTile
           label={t("accuracy")}
-          value={metrics.accuracy === null ? "—" : `${metrics.accuracy}%`}
+          value={accuracy === null ? "—" : `${accuracy}%`}
         />
         <StatTile
           label={t("currentStreak")}
@@ -205,51 +132,29 @@ export function InsightsPage() {
         />
       </InsetGroup>
 
-      {/* 词量趋势 */}
+      {/* 学习词数趋势 */}
       <section className="space-y-2.5">
-        <GroupHeader>{t("wordActivity")}</GroupHeader>
-        {isDay ? (
-          <InsetGroup>
-            <ListRow
-              primary={t("learnedLabel")}
-              secondary={t("learnedDesc")}
-              trailing={
-                <span className="text-[17px] font-medium tabular-nums">
-                  {todayStat?.learned ?? 0}
-                </span>
-              }
+        <GroupHeader>{t("wordsTrend")}</GroupHeader>
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <ChartDot className="bg-[#FF9500]/85" label={t("legendLearned")} />
+            <ChartDot className="bg-[#FF9EBB]/90" label={t("legendReviewed")} />
+            <ChartDot
+              className="bg-foreground/[0.15]"
+              label={t("pendingNow", { n: pending })}
             />
-            <ListRow
-              primary={t("reviewedLabel")}
-              secondary={t("reviewedDesc")}
-              trailing={
-                <span className="text-[17px] font-medium tabular-nums">
-                  {todayStat?.reviewed ?? 0}
-                </span>
-              }
-            />
-          </InsetGroup>
-        ) : (
-          <AppleBars data={wordBars} labelStep={range === "month" ? 5 : 1} />
-        )}
+          </div>
+          <AppleBars data={barData} height={170} labelStep={trendLabelStep(range)} />
+        </div>
       </section>
 
-      {/* 学习时长 */}
+      {/* 学习时长趋势 */}
       <section className="space-y-2.5">
-        <GroupHeader>{t("studyTimeSection")}</GroupHeader>
-        {isDay ? (
-          <p className="px-1 text-[15px] text-muted-foreground">
-            {t("studiedToday")}{" "}
-            <span className="font-medium text-foreground">
-              {fmtDuration(todayStat?.seconds ?? 0)}
-            </span>
-          </p>
-        ) : (
-          <AppleArea points={timeSeries} />
-        )}
+        <GroupHeader>{t("timeTrend")}</GroupHeader>
+        <AppleArea points={timePoints} height={140} labelStep={trendLabelStep(range)} />
       </section>
 
-      {/* 掌握分布 */}
+      {/* 掌握度 */}
       <section className="space-y-2.5">
         <GroupHeader>{t("mastery")}</GroupHeader>
         <div className="space-y-3">
@@ -267,15 +172,19 @@ export function InsightsPage() {
               count={mastered}
             />
             <ChartDot className="bg-[#32ADE6]" label={t("learning")} count={learning} />
-            <ChartDot className="bg-foreground/[0.15]" label={t("newWords")} count={fresh} />
+            <ChartDot
+              className="bg-foreground/[0.15]"
+              label={t("newWords")}
+              count={fresh}
+            />
           </div>
         </div>
       </section>
 
-      {/* 易错词入口 */}
+      {/* 错题入口 */}
       {mistakes.length > 0 && (
         <section className="space-y-2.5">
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-0">
             <SectionTitle>{t("mistakes")}</SectionTitle>
             <button
               type="button"
@@ -295,7 +204,7 @@ export function InsightsPage() {
                 secondary={w.meaning}
                 trailing={
                   <span className="text-[13px] font-medium tabular-nums text-[#FF3B30] dark:text-[#FF453A]">
-                    {t("wrong", { n: p!.wrong })}
+                    {t("wrongTimes", { n: p!.wrong })}
                   </span>
                 }
               />

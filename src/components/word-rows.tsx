@@ -2,6 +2,7 @@ import * as React from "react"
 import { EmptyState, InsetGroup, ListRow } from "@/components/kit/primitives"
 import { WordSheet } from "@/components/word-sheet"
 import { WordStatusText } from "@/components/word-status-badge"
+import { speakText } from "@/lib/speech"
 import { getProgress, useVoca } from "@/store/voca-context"
 import type { Word } from "@/lib/types"
 
@@ -38,6 +39,23 @@ export function WordRow({
       secondary={word.meaning}
       trailing={
         <span className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (state.settings.sound) {
+                speakText(word.word, state.settings.voice)
+              }
+            }}
+            aria-label="发音"
+            className="-mr-1.5 flex size-8 shrink-0 items-center justify-center rounded-full text-primary/70 transition-colors active:bg-primary/10 active:text-primary"
+          >
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 5 6 9H2v6h4l5 4V5z" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+          </button>
           {word.favorite && (
             <svg
               className="size-3.5 text-[#FF3B30]"

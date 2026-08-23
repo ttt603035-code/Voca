@@ -41,16 +41,27 @@ Words（单词）
 
 ## 功能
 
-- **Today**：Today's Review 大数字 + 进度、连续天数、Difficult Words、AI Reading 入口（预留）
-- **Review**：3D 翻转卡片背词，Again / Hard / Good / Easy 四档自评，简化版 SM-2 间隔重复，筛选 All / Due Today / Difficult / Mistakes / Favorites
+- **Today**：学习概况（今日学习/复习/时长 + 累计词数/时长）、Today's Review 大数字 + 进度、连续天数、学习趋势（7/30/90 天：学习词数/复习词数/待复习词数堆叠柱 + 学习时长曲线）、Difficult Words、AI Reading 入口（预留）
+- **Review**：3D 翻转卡片背词，Again / Hard / Good / Easy 四档自评，简化版 SM-2 间隔重复；筛选 All / Due Today / Difficult / Mistakes / Favorites；**范围化 Practice**（单个 List / 整个词书 Practice All + 范围 Select：All words / Unmastered / Due for Review / Mistakes / Favorites / Similar Words Practice All）；完成后 **StudyHub 清透风格完成弹窗**（Words reviewed / Mastered / Need review / Study time / Accuracy + Review Again / Review Difficult Words）；每次 Practice 记录会话（日期/时长/范围/词数/正确率）
+- **Words**：单词本（专四/六级/我的单词）→ List（词数 + 状态：Not started / Recently studied / N% mastered + 轻进度条 + 单 List Practice）→ Word（行内发音/收藏/掌握状态）
+- **Mistakes 错题本**：真实错题历史（word/date/session/book/list/wrong count），按日期分组（Today / 08-22…），点日期看当天错词 + Practice Again，词行显示错 N 次 + Last wrong
+- **Similar Words 易混词**：分类（拼写相似/词形相似/意义混淆/我创建的）Select 筛选、词组收藏（心形）、New Group（单词详情或页面 + 号）、组内对比 + Key Difference + Practice this group、Practice All（All / Unmastered / Mistakes / Favorites）
+- **Favorites**：收藏单词 + 收藏易混词组
 - **发音**：Web Speech API（en-US / en-GB 可选，可关闭），Lucide Volume2 按钮
 - **Similar Words**：易混词组对比 + Key Difference + Practice 练习；单词详情可 Add to Similar Words / New Group
 - **Mistakes**：错误词列表（Wrong × N），一键 Review Mistakes
 - **Practice Test**：四选一测试（Word → Meaning / Meaning → Word）
-- **Insights**：Day / Week / Month / Year，Study Time / Words Reviewed / Accuracy / Streak，圆润趋势图 + 掌握度分布
+- **Insights**：最近 7/30/90 天 Select，Study Time / Words Reviewed / Accuracy / Current Streak，圆润趋势图（学习词数/复习词数/待复习 + 学习时长）+ 掌握度分布 + 错题入口
 - **Import Vocabulary**：仅用于用户词库（CSV / Excel / TXT / 粘贴），Preview 确认；与内置词书同名时自动创建副本
-- **Settings**：Language（中文/English 即时切换）、Vocabulary（导入 + 每轮新词）、Appearance（Light/Auto/Dark + 12 种 Apple 系统色 + 随机）、Sound、Gemini API Key 预留位、导出/重置
-- **i18n**：`src/lib/locales.ts`（zh-CN / en-US）统一文案；单词内容不随界面语言变化
+- **Settings**：Language（中文/English 即时切换）、Vocabulary（导入 + 每轮新词）、Appearance（Light/Auto/Dark + 12 种 Apple 系统色 + 随机）、Sound（发音开关 + 美音/英音）、Gemini API Key 预留位、导出/重置
+- **i18n**：`src/lib/locales.ts`（zh-CN / en-US）统一文案（Today/Words/Review/Insights/Practice/完成页/错题/易混词/空状态/错误提示全覆盖）；单词内容不随界面语言变化
+
+## 视觉方向（Apple 交互 + StudyHub 清透视觉）
+
+- 纯白背景 + 极浅灰分组层级；柔和圆角（10/14/19/22pt）；极轻阴影
+- 弹窗/Sheet/Select 统一清透语言：背景轻遮罩 + backdrop blur、白色半透明毛玻璃面板、无厚重边框
+- 隐藏滚动条、iOS 触控反馈（active 态）、iPhone/iPad 优先
+- 不用橙色教育 App 视觉、不用 Sidebar、不用 SaaS Dashboard 风格
 
 ## 快速开始
 
@@ -75,11 +86,12 @@ src/
 │   ├── import-vocab-sheet.tsx
 │   └── ui/                 # shadcn/ui 组件
 ├── lib/
-│   ├── types.ts            # 统一 Book / List / Word / 全局状态
-│   ├── confusables.ts      # 内置易混词组
+│   ├── types.ts            # 统一 Book / List / Word / SessionRecord / 全局状态
+│   ├── confusables.ts      # 内置易混词组（含分类）
 │   ├── import-vocab.ts     # CSV / Excel / TXT 解析
+│   ├── trends.ts           # 趋势窗口计算（7/30/90 天 + 待复习）
 │   ├── locales.ts          # i18n 文案
-│   ├── i18n.ts             # useT()
+│   ├── i18n.ts             # useT() + 时长/日期格式化
 │   ├── accents.ts          # 主题色预设
 │   ├── srs.ts              # 间隔重复（简化版 SM-2）
 │   └── speech.ts           # TTS

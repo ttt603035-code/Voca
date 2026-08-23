@@ -8,6 +8,8 @@ import type {
   Book,
   DayStat,
   Rating,
+  SessionRecord,
+  SimilarCategory,
   SimilarGroup,
   SimilarWordEntry,
   VocaList,
@@ -233,6 +235,11 @@ function migrateOldState(parsed: any): VocaState {
         (parsed.activity ?? {}) as Record<string, Partial<DayStat>>,
       ).map(([k, v]) => [k, normalizeDay(v)]),
     ),
+    mistakeLog:
+      parsed.mistakeLog && typeof parsed.mistakeLog === "object"
+        ? parsed.mistakeLog
+        : {},
+    sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
     builtIn: { loaded: false, error: null },
   }
 }
@@ -253,6 +260,8 @@ function defaultState(): VocaState {
       sound: true,
     },
     activity: {},
+    mistakeLog: {},
+    sessions: [],
     builtIn: { loaded: false, error: null },
   }
 }
@@ -291,6 +300,11 @@ function loadState(): VocaState {
               (parsed.activity ?? {}) as Record<string, Partial<DayStat>>,
             ).map(([k, v]) => [k, normalizeDay(v)]),
           ),
+          mistakeLog:
+            parsed.mistakeLog && typeof parsed.mistakeLog === "object"
+              ? parsed.mistakeLog
+              : {},
+          sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
           builtIn: { loaded: false, error: null },
         }
       }
@@ -312,6 +326,8 @@ function persist(state: VocaState) {
       progress: state.progress,
       settings: state.settings,
       activity: state.activity,
+      mistakeLog: state.mistakeLog,
+      sessions: state.sessions,
     }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
   } catch {
@@ -332,6 +348,8 @@ type Action =
   | { type: "rate"; wordId: string; rating: Rating }
   | { type: "quiz-answer"; wordId: string; correct: boolean }
   | { type: "record-time"; seconds: number }
+  | { type: "record-session"; session: SessionRecord }
+  | { type: "toggle-group-favorite"; groupId: string }
   | { type: "set-goal"; goal: number }
   | { type: "set-accent"; id: string | null }
   | { type: "set-gemini-key"; key: string }
@@ -339,10 +357,20 @@ type Action =
   | { type: "set-voice"; voice: "en-US" | "en-GB" }
   | { type: "set-sound"; on: boolean }
   | { type: "import"; payload: ImportPayload; mode: "update" | "duplicate" }
-  | { type: "create-group"; group: SimilarGroup }
+  | { type: "create-group"; group: SimilarGroup; category?: SimilarCategory }
   | { type: "add-to-group"; groupId: string; entry: SimilarWordEntry }
   | { type: "remove-from-group"; groupId: string; word: string }
   | { type: "reset-all" }
+
+function logMistake(
+  mistakeLog: Record<string, Record<string, number>>,
+  date: string,
+  wordId: string,
+): Record<string, Record<string, number>> {
+  const day = { ...(mistakeLog[date] ?? {}) }
+  day[wordId] = (day[wordId] ?? 0) + 1
+  return { ...mistakeLog, [date]: day }
+}
 
 function touchDay(
   activity: Record<string, DayStat>,
@@ -453,6 +481,10 @@ function reducer(state: VocaState, action: Action): VocaState {
           learned: learned ? 1 : 0,
           reviewed: learned ? 0 : 1,
         }),
+        mistakeLog:
+          action.rating === "again"
+            ? logMistake(state.mistakeLog, today, action.wordId)
+            : state.mistakeLog,
       }
     }
     case "quiz-answer": {
@@ -471,8 +503,20 @@ function reducer(state: VocaState, action: Action): VocaState {
           learned: learned ? 1 : 0,
           reviewed: learned ? 0 : 1,
         }),
+        mistakeLog: action.correct
+          ? state.mistakeLog
+          : logMistake(state.mistakeLog, today, action.wordId),
       }
     }
+    case "record-session":
+      return { ...state, sessions: [...state.sessions, action.session] }
+    case "toggle-group-favorite":
+      return {
+        ...state,
+        similarGroups: state.similarGroups.map((g) =>
+          g.id === action.groupId ? { ...g, favorite: !g.favorite } : g,
+        ),
+      }
     case "record-time":
       if (action.seconds <= 0) return state
       return {
@@ -631,7 +675,10 @@ function reducer(state: VocaState, action: Action): VocaState {
     case "create-group":
       return {
         ...state,
-        similarGroups: [...state.similarGroups, action.group],
+        similarGroups: [
+          ...state.similarGroups,
+          action.category ? { ...action.group, category: action.category } : action.group,
+        ],
       }
     case "add-to-group":
       return {
@@ -700,6 +747,8 @@ interface VocaContextValue {
   rateWord: (wordId: string, rating: Rating) => void
   recordQuizAnswer: (wordId: string, correct: boolean) => void
   recordTime: (seconds: number) => void
+  recordSession: (session: SessionRecord) => void
+  toggleGroupFavorite: (groupId: string) => void
   setDailyGoal: (goal: number) => void
   setAccent: (id: string | null) => void
   setGeminiKey: (key: string) => void
@@ -710,7 +759,7 @@ interface VocaContextValue {
     payload: ImportPayload,
     mode: "update" | "duplicate",
   ) => void
-  createGroup: (title: string) => SimilarGroup
+  createGroup: (title: string, category?: SimilarCategory) => SimilarGroup
   addToGroup: (groupId: string, entry: SimilarWordEntry) => void
   removeFromGroup: (groupId: string, word: string) => void
   resetAll: () => void
@@ -752,6 +801,9 @@ export function VocaProvider({ children }: { children: React.ReactNode }) {
       recordQuizAnswer: (wordId, correct) =>
         dispatch({ type: "quiz-answer", wordId, correct }),
       recordTime: (seconds) => dispatch({ type: "record-time", seconds }),
+      recordSession: (session) => dispatch({ type: "record-session", session }),
+      toggleGroupFavorite: (groupId) =>
+        dispatch({ type: "toggle-group-favorite", groupId }),
       setDailyGoal: (goal) => dispatch({ type: "set-goal", goal }),
       setAccent: (id) => dispatch({ type: "set-accent", id }),
       setGeminiKey: (key) => dispatch({ type: "set-gemini-key", key }),
@@ -760,13 +812,13 @@ export function VocaProvider({ children }: { children: React.ReactNode }) {
       setSound: (on) => dispatch({ type: "set-sound", on }),
       importVocabulary: (payload, mode) =>
         dispatch({ type: "import", payload, mode }),
-      createGroup: (title) => {
+      createGroup: (title, category) => {
         const group: SimilarGroup = {
           id: crypto.randomUUID(),
           title: title.trim(),
           words: [],
         }
-        dispatch({ type: "create-group", group })
+        dispatch({ type: "create-group", group, category })
         return group
       },
       addToGroup: (groupId, entry) =>
@@ -849,4 +901,55 @@ export function bookStats(state: VocaState, bookId: string) {
     .length
   const lists = state.lists.filter((l) => l.bookId === bookId)
   return { total: ws.length, mastered, lists: lists.length }
+}
+
+/* ─────────────── 错题选择器 ─────────────── */
+
+/** 某次学习会话中答错的词（按日期），返回 wordId 列表 */
+export function wordsByMistakeDate(
+  state: VocaState,
+  date: string,
+): string[] {
+  const day = state.mistakeLog[date]
+  if (!day) return []
+  return Object.entries(day)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id)
+}
+
+/** 最近一次答错日期 */
+export function lastMistakeDate(
+  state: VocaState,
+  wordId: string,
+): string | null {
+  const dates = Object.keys(state.mistakeLog)
+    .filter((d) => state.mistakeLog[d][wordId])
+    .sort()
+    .reverse()
+  return dates[0] ?? null
+}
+
+/** 全部错题日期（倒序） */
+export function mistakeDates(state: VocaState): string[] {
+  return Object.keys(state.mistakeLog)
+    .filter((d) => Object.keys(state.mistakeLog[d]).length > 0)
+    .sort()
+    .reverse()
+}
+
+/* ─────────────── 学习概览选择器 ─────────────── */
+
+export function overviewStats(state: VocaState) {
+  const today = state.activity[todayStr()]
+  let totalLearnedWords = 0
+  let totalSeconds = 0
+  for (const s of Object.values(state.activity)) totalSeconds += s.seconds
+  for (const w of state.words) if (state.progress[w.id]) totalLearnedWords += 1
+  return {
+    todayLearned: today?.learned ?? 0,
+    todayReviewed: today?.reviewed ?? 0,
+    todaySeconds: today?.seconds ?? 0,
+    totalLearnedWords,
+    totalSeconds,
+  }
 }

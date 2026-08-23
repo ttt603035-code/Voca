@@ -7,51 +7,90 @@ function niceMax(v: number): number {
   return Math.ceil(v / 5) * 5
 }
 
-/* ─────────────── Apple 风格圆角柱状图 ─────────────── */
+/* ─────────────── Apple 风格圆角柱状图（支持多系列堆叠） ─────────────── */
+
+export interface BarSegment {
+  value: number
+  className: string
+}
+
+export interface BarPoint {
+  label: string
+  segments: BarSegment[]
+  highlight?: boolean
+}
 
 export function AppleBars({
   data,
   height = 170,
-  color = "var(--primary)",
   labelStep = 1,
 }: {
-  data: { label: string; value: number }[]
+  data: BarPoint[]
   height?: number
-  color?: string
-  /** 每隔几个显示一个 X 轴标签 */
   labelStep?: number
 }) {
-  const top = niceMax(Math.max(0, ...data.map((d) => d.value)))
+  const top = niceMax(
+    Math.max(0, ...data.map((d) => d.segments.reduce((s, x) => s + x.value, 0))),
+  )
+  const dense = data.length > 16
+  const gap = dense ? "gap-px" : "gap-[4%]"
+
   return (
     <div>
       <div className="relative" style={{ height }}>
-        <div
-          className="absolute inset-0 flex items-end gap-[3.5%] px-1"
-          aria-hidden
-        >
-          {data.map((d, i) => (
-            <div key={i} className="flex h-full flex-1 justify-center">
-              <div
-                className="w-full max-w-[26px] rounded-[4px] transition-[height] duration-500 ease-out"
-                style={{
-                  height:
-                    d.value > 0
-                      ? `max(${(d.value / top) * 100}%, 4px)`
-                      : "3px",
-                  backgroundColor: d.value > 0 ? color : "rgba(120,120,128,0.25)",
-                }}
-                title={`${d.label}：${d.value}`}
-              />
-            </div>
-          ))}
+        {/* 轻网格线（仅 3 条） */}
+        {[0.5, 1].map((f) => (
+          <div
+            key={f}
+            className="absolute inset-x-0 border-t border-border/40"
+            style={{ bottom: `${f * 100}%` }}
+          />
+        ))}
+        <div className={cn("absolute inset-0 flex items-end", gap)}>
+          {data.map((d, i) => {
+            const total = d.segments.reduce((s, x) => s + x.value, 0)
+            return (
+              <div key={i} className="flex h-full min-w-0 flex-1 justify-center">
+                <div
+                  className={cn(
+                    "flex w-full flex-col-reverse overflow-hidden transition-all",
+                    dense ? "max-w-[10px] rounded-[2px]" : "max-w-[26px] rounded-[4px]",
+                  )}
+                  title={`${d.label}：${total}`}
+                >
+                  {total > 0
+                    ? d.segments
+                        .filter((s) => s.value > 0)
+                        .map((s, j) => (
+                          <div
+                            key={j}
+                            className={cn("w-full", s.className)}
+                            style={{ height: `${(s.value / top) * 100}%` }}
+                          />
+                        ))
+                    : dense ? null : (
+                        <div
+                          className="w-full bg-foreground/[0.08]"
+                          style={{ height: 3 }}
+                        />
+                      )}
+                </div>
+              </div>
+            )
+          })}
         </div>
-        <div className="absolute inset-x-0 bottom-0 border-t border-border/80" />
+        <div className="absolute inset-x-0 bottom-0 border-t border-border/70" />
       </div>
-      <div className="mt-2 flex gap-[3.5%] px-1">
+      <div className={cn("mt-2 flex", gap)}>
         {data.map((d, i) => (
           <span
             key={i}
-            className="flex-1 truncate text-center text-[11px] text-muted-foreground"
+            className={cn(
+              "min-w-0 flex-1 truncate text-center text-[11px]",
+              d.highlight
+                ? "font-semibold text-primary"
+                : "text-muted-foreground",
+            )}
           >
             {i % labelStep === 0 || i === data.length - 1 ? d.label : ""}
           </span>
@@ -84,14 +123,16 @@ export function AppleArea({
   points,
   height = 150,
   color = "var(--primary)",
+  labelStep = 1,
 }: {
   points: { label: string; value: number }[]
   height?: number
   color?: string
+  labelStep?: number
 }) {
   const W = 600
   const H = 160
-  const PAD = { top: 14, bottom: 8, left: 6, right: 6 }
+  const PAD = { top: 14, bottom: 6, left: 4, right: 4 }
   const top = niceMax(Math.max(0, ...points.map((p) => p.value)))
   const plotW = W - PAD.left - PAD.right
   const plotH = H - PAD.top - PAD.bottom
@@ -115,7 +156,16 @@ export function AppleArea({
         role="img"
         aria-label="学习时长趋势"
       >
-        {area && <path d={area} fill={color} opacity={0.12} />}
+        <line
+          x1={0}
+          x2={W}
+          y1={H / 2}
+          y2={H / 2}
+          className="stroke-border/40"
+          strokeWidth={1}
+          vectorEffect="non-scaling-stroke"
+        />
+        {area && <path d={area} fill={color} opacity={0.1} />}
         {line && (
           <path
             d={line}
@@ -138,13 +188,13 @@ export function AppleArea({
           />
         )}
       </svg>
-      <div className="mt-1 flex justify-between border-t border-border/80 pt-1.5">
+      <div className="mt-1 flex border-t border-border/70 pt-1.5">
         {points.map((p, i) => (
           <span
             key={i}
             className={cn(
-              "text-[11px] text-muted-foreground",
-              points.length > 8 && i % 2 !== 0 && i !== points.length - 1 && "hidden sm:inline",
+              "min-w-0 flex-1 truncate text-center text-[11px] text-muted-foreground",
+              i % labelStep !== 0 && i !== points.length - 1 && "hidden sm:inline",
             )}
           >
             {p.label}
@@ -168,7 +218,7 @@ export function AppleStackedBar({
   return (
     <div
       className={cn(
-        "flex h-2.5 w-full overflow-hidden rounded-full bg-foreground/[0.07]",
+        "flex h-2.5 w-full overflow-hidden rounded-full bg-foreground/[0.06]",
         className,
       )}
     >

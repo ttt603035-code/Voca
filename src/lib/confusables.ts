@@ -5,6 +5,7 @@ import type { SimilarGroup } from "./types"
 export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   {
     id: "borrow-lend",
+    category: "meaning",
     title: "borrow · lend",
     builtIn: true,
     tip: "方向相反：borrow 是“借进来”，lend 是“借出去”。",
@@ -15,6 +16,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "say-tell",
+    category: "meaning",
     title: "say · tell",
     builtIn: true,
     tip: "tell 后面必须跟“人”（tell sb）；say 后面跟“内容”。",
@@ -25,6 +27,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "affect-effect",
+    category: "meaning",
     title: "affect · effect",
     builtIn: true,
     tip: "affect 是动词，effect 是名词——“have an effect on” 是固定搭配。",
@@ -35,6 +38,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "raise-rise",
+    category: "spelling",
     title: "raise · rise",
     builtIn: true,
     tip: "raise 要“带着东西升”（及物），rise 是“自己升”（不及物）。",
@@ -45,6 +49,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "lay-lie",
+    category: "spelling",
     title: "lay · lie",
     builtIn: true,
     tip: "lie 的过去式是 lay——英语最经典的坑：“Yesterday I lay in bed…”",
@@ -55,6 +60,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "weather-whether",
+    category: "spelling",
     title: "weather · whether",
     builtIn: true,
     tip: "读音完全相同：名词位置是 weather，引导从句的是 whether。",
@@ -65,6 +71,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "quiet-silent",
+    category: "meaning",
     title: "quiet · silent",
     builtIn: true,
     tip: "quiet 是“不吵”，silent 是“彻底没声音”。",
@@ -75,6 +82,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "watch-look",
+    category: "meaning",
     title: "watch · look",
     builtIn: true,
     tip: "look 是“看过去一下”（动作），watch 是“盯着看一段过程”。",
@@ -85,6 +93,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "adapt-adopt-adept",
+    category: "spelling",
     title: "adapt · adopt · adept",
     builtIn: true,
     tip: "adapt 是“适应/改编”，adopt 是“收养/采用”，adept 是“擅长的”。",
@@ -96,6 +105,7 @@ export const SEED_SIMILAR_GROUPS: SimilarGroup[] = [
   },
   {
     id: "economic-family",
+    category: "form",
     title: "economic · economical · economy",
     builtIn: true,
     tip: "economic 是“经济学的/经济上的”，economical 是“节约的”，economy 是“经济”。",

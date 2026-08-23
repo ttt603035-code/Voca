@@ -45,9 +45,15 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function GroupHeader({ children }: { children: React.ReactNode }) {
+export function GroupHeader({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
   return (
-    <p className="px-1 text-[13px] font-normal text-muted-foreground">
+    <p className={cn("px-1 text-[13px] font-normal text-muted-foreground", className)}>
       {children}
     </p>
   )
@@ -439,10 +445,10 @@ export function AppleAlert({
     <AlertDialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialogPrimitive.Portal>
         <AlertDialogPrimitive.Overlay
-          className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px] animate-fade-in"
+          className="fixed inset-0 z-[80] bg-black/20 backdrop-blur-[3px] animate-fade-in"
         />
         <AlertDialogPrimitive.Content
-          className="fixed top-1/2 left-1/2 z-[81] w-[calc(100vw-48px)] max-w-[300px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[14px] bg-popover p-0 shadow-[0_20px_60px_rgba(0,0,0,0.28)] animate-pop-in dark:bg-[#2c2c2e]"
+          className="fixed top-1/2 left-1/2 z-[81] w-[calc(100vw-48px)] max-w-[320px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[20px] bg-popover/90 backdrop-blur-2xl p-0 shadow-[0_20px_60px_rgba(0,0,0,0.14)] animate-pop-in"
         >
           <div className="px-6 pt-5 pb-4 text-center">
             <AlertDialogPrimitive.Title className="text-[17px] leading-snug font-semibold">
