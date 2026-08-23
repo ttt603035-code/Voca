@@ -1,44 +1,27 @@
 import {
-  AlertTriangle,
-  Check,
+  Cloud,
   Dices,
   Download,
-  Moon,
-  Monitor,
-  Sparkles,
-  Sun,
+  ShieldCheck,
+  Trash2,
+  Wifi,
 } from "lucide-react"
 import * as React from "react"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import {
+  AppleAlert,
+  GroupHeader,
+  InsetGroup,
+  LargeTitle,
+  ListRow,
+  SegmentedControl,
+  Stepper,
+} from "@/components/kit/primitives"
 import { useTheme } from "@/components/theme-provider"
-import { ACCENTS } from "@/lib/accents"
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
+import { ACCENTS, DEFAULT_ACCENT_ID } from "@/lib/accents"
 import { cn } from "@/lib/utils"
 import { useVoca } from "@/store/voca-context"
-
-const THEME_OPTIONS = [
-  { value: "light", label: "浅色", icon: Sun },
-  { value: "dark", label: "深色", icon: Moon },
-  { value: "system", label: "跟随系统", icon: Monitor },
-] as const
 
 function exportData(state: unknown) {
   const blob = new Blob([JSON.stringify(state, null, 2)], {
@@ -55,248 +38,244 @@ function exportData(state: unknown) {
 export function SettingsPage() {
   const { state, setDailyGoal, setAccent, setGeminiKey, resetAll } = useVoca()
   const { theme, setTheme } = useTheme()
-  const [goalDraft, setGoalDraft] = React.useState(
-    String(state.settings.dailyGoal),
-  )
+  const [keySheet, setKeySheet] = React.useState(false)
   const [keyDraft, setKeyDraft] = React.useState(state.settings.geminiKey)
-  const [keyVisible, setKeyVisible] = React.useState(false)
   const [confirmReset, setConfirmReset] = React.useState(false)
 
   const accentId = state.settings.accentId
-  const storageKB = (
-    JSON.stringify(state).length / 1024
-  ).toFixed(1)
+  const storageKB = (JSON.stringify(state).length / 1024).toFixed(1)
+  const hasKey = !!state.settings.geminiKey
 
   function randomAccent() {
     const others = ACCENTS.filter((a) => a.id !== accentId)
     const next = others[Math.floor(Math.random() * others.length)]
     setAccent(next.id)
-    toast.success(`已切换到「${next.name}」`)
+    toast(`Accent: ${next.name}`)
   }
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">设置</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          外观、学习偏好与数据管理
-        </p>
-      </div>
+    <div className="space-y-7">
+      <LargeTitle title="Settings" />
 
-      {/* 外观 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">外观</CardTitle>
-          <CardDescription>界面主题与主题色</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="grid gap-2">
-            <span className="text-sm font-medium">模式</span>
-            <div className="flex w-fit rounded-lg border bg-muted/50 p-1">
-              {THEME_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setTheme(opt.value)}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors",
-                    theme === opt.value
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <opt.icon className="size-4" />
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+      {/* Appearance */}
+      <section className="space-y-2.5">
+        <GroupHeader>Appearance</GroupHeader>
+        <InsetGroup>
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
+            <span className="text-[17px]">Theme</span>
+            <SegmentedControl
+              value={theme}
+              onChange={(v) => setTheme(v as "light" | "dark" | "system")}
+              options={[
+                { value: "light", label: "Light" },
+                { value: "system", label: "Auto" },
+                { value: "dark", label: "Dark" },
+              ]}
+            />
           </div>
-
-          <div className="grid gap-2">
+          <div className="px-4 py-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">主题色</span>
-              <Button variant="ghost" size="sm" onClick={randomAccent}>
+              <span className="text-[17px]">Accent Color</span>
+              <button
+                type="button"
+                onClick={randomAccent}
+                className="flex items-center gap-1 text-[15px] text-primary"
+              >
                 <Dices className="size-4" />
-                随机一个
-              </Button>
+                随机
+              </button>
             </div>
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+            <div className="mt-3 grid grid-cols-6 gap-3">
               {ACCENTS.map((a) => {
-                const active = (accentId ?? "default") === a.id
+                const active = (accentId ?? DEFAULT_ACCENT_ID) === a.id
                 return (
                   <button
                     key={a.id}
                     type="button"
-                    onClick={() => {
-                      setAccent(a.id)
-                      toast.success(`已切换到「${a.name}」`)
-                    }}
+                    onClick={() => setAccent(a.id)}
+                    aria-label={a.name}
                     className={cn(
-                      "group flex flex-col items-center gap-1.5 rounded-lg border p-2 transition-colors",
+                      "mx-auto size-8 rounded-full transition-transform",
                       active
-                        ? "border-foreground/40 bg-accent"
-                        : "hover:bg-accent/60",
+                        ? "scale-100 ring-2 ring-foreground/60 ring-offset-2 ring-offset-background"
+                        : "active:scale-90",
                     )}
-                    title={a.name}
-                  >
-                    <span
-                      className={cn(
-                        "flex size-7 items-center justify-center rounded-full",
-                        active && "ring-2 ring-foreground/30 ring-offset-2",
-                      )}
-                      style={{ backgroundColor: a.primary }}
-                    >
-                      {active && (
-                        <Check
-                          className="size-3.5"
-                          style={{ color: a.primaryFg }}
-                        />
-                      )}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">
-                      {a.name}
-                    </span>
-                  </button>
+                    style={{
+                      backgroundColor:
+                        theme === "dark" ? a.dark : a.light,
+                    }}
+                  />
                 )
               })}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </InsetGroup>
+      </section>
 
-      {/* 学习偏好 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">学习</CardTitle>
-          <CardDescription>影响卡片学习每轮的新单词数量</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-end gap-3">
-          <div className="grid w-44 gap-2">
-            <label className="text-sm font-medium" htmlFor="goal">
-              每日目标（个）
-            </label>
-            <Input
-              id="goal"
-              type="number"
+      {/* Learning */}
+      <section className="space-y-2.5">
+        <GroupHeader>Learning</GroupHeader>
+        <InsetGroup>
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
+            <div>
+              <p className="text-[17px]">Daily Goal</p>
+              <p className="text-[13px] text-muted-foreground">
+                每天学习的新单词数量
+              </p>
+            </div>
+            <Stepper
+              value={state.settings.dailyGoal}
+              onChange={setDailyGoal}
               min={1}
               max={100}
-              value={goalDraft}
-              onChange={(e) => setGoalDraft(e.target.value)}
             />
           </div>
-          <Button
-            variant="secondary"
-            disabled={String(state.settings.dailyGoal) === goalDraft}
+        </InsetGroup>
+      </section>
+
+      {/* AI */}
+      <section className="space-y-2.5">
+        <GroupHeader>Gemini API</GroupHeader>
+        <InsetGroup>
+          <ListRow
+            icon={Cloud}
+            tint="#AF52DE"
+            as="button"
             onClick={() => {
-              const n = Number(goalDraft)
-              if (Number.isFinite(n) && n >= 1 && n <= 100) {
-                setDailyGoal(n)
-                toast.success(`每日目标已设为 ${Math.round(n)} 个`)
-              }
+              setKeyDraft(state.settings.geminiKey)
+              setKeySheet(true)
             }}
-          >
-            保存
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Gemini API */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="size-4 text-primary" />
-            Gemini API
-          </CardTitle>
-          <CardDescription>
-            预留功能：后续用于 AI 生成释义、例句与智能复习建议
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            <div className="relative min-w-0 flex-1">
-              <Input
-                type={keyVisible ? "text" : "password"}
-                placeholder="AIza…"
-                value={keyDraft}
-                onChange={(e) => setKeyDraft(e.target.value)}
-                className="pr-16"
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-1/2 right-1 -translate-y-1/2 px-2 text-xs"
-                onClick={() => setKeyVisible((v) => !v)}
+            primary="Gemini API Key"
+            secondary="用于 AI Reading（即将上线）"
+            trailing={
+              <span
+                className={cn(
+                  "text-[14px]",
+                  hasKey ? "text-[#34C759]" : "text-muted-foreground/60",
+                )}
               >
-                {keyVisible ? "隐藏" : "显示"}
-              </Button>
-            </div>
-            <Button
-              onClick={() => {
-                setGeminiKey(keyDraft)
-                toast.success(
-                  keyDraft.trim() ? "API Key 已保存" : "API Key 已清除",
-                )
-              }}
-            >
-              保存
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Key 仅保存在本机浏览器 localStorage 中，不会上传到任何服务器。
-          </p>
-        </CardContent>
-      </Card>
+                {hasKey ? "已配置" : "未配置"}
+              </span>
+            }
+            chevron
+          />
+        </InsetGroup>
+      </section>
 
-      {/* 数据与存储 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">数据与存储</CardTitle>
-          <CardDescription>
-            所有数据保存在浏览器本地（localStorage），当前占用约 {storageKB} KB
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-center gap-3">
-          <Button variant="secondary" onClick={() => exportData(state)}>
-            <Download className="size-4" />
-            导出数据（JSON）
-          </Button>
-          <Button
-            variant="outline"
-            className="text-destructive"
+      {/* Data */}
+      <section className="space-y-2.5">
+        <GroupHeader>Data</GroupHeader>
+        <InsetGroup>
+          <ListRow
+            icon={Wifi}
+            tint="#32ADE6"
+            primary="Local Storage"
+            secondary="数据仅保存在本机浏览器"
+            trailing={
+              <span className="text-[14px] text-muted-foreground tabular-nums">
+                {storageKB} KB
+              </span>
+            }
+          />
+          <ListRow
+            icon={Download}
+            tint="#34C759"
+            as="button"
+            onClick={() => {
+              exportData(state)
+              toast("已导出 JSON 备份")
+            }}
+            primary="Export Data"
+            chevron
+          />
+          <ListRow
+            icon={Trash2}
+            tint="#FF3B30"
+            as="button"
             onClick={() => setConfirmReset(true)}
-          >
-            <AlertTriangle className="size-4" />
-            重置全部数据
-          </Button>
-          <p className="w-full text-xs text-muted-foreground">
-            重置将清空所有学习进度、自定义单词和统计记录，并恢复内置词库。
-          </p>
-        </CardContent>
-      </Card>
+            primary={<span className="text-destructive">Reset All Data</span>}
+          />
+        </InsetGroup>
+      </section>
 
-      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确定重置全部数据？</AlertDialogTitle>
-            <AlertDialogDescription>
-              所有学习进度、自定义单词和统计记录都会被清空，并恢复为内置词库。此操作无法撤销。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-white hover:bg-destructive/90"
-              onClick={() => {
-                resetAll()
-                setConfirmReset(false)
-                toast.success("数据已重置")
-              }}
-            >
-              确认重置
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* About */}
+      <section className="space-y-2.5">
+        <GroupHeader>About</GroupHeader>
+        <InsetGroup>
+          <ListRow
+            icon={ShieldCheck}
+            tint="#8E8E93"
+            primary="Voca · 英语词汇学习"
+            secondary="Version 1.0 · Apple-style UI"
+          />
+        </InsetGroup>
+      </section>
+
+      {/* API Key 输入 Sheet */}
+      <Sheet open={keySheet} onOpenChange={setKeySheet}>
+        <SheetContent
+          side="bottom"
+          className="gap-0 overflow-y-auto rounded-t-[22px] p-0 pb-[env(safe-area-inset-bottom)]"
+        >
+          <div className="sticky top-0 z-10 flex justify-center bg-background/90 pt-2.5 pb-1 backdrop-blur">
+            <div className="h-1 w-9 rounded-full bg-foreground/20" />
+          </div>
+          <div className="space-y-4 px-5 pt-2 pb-6">
+            <h2 className="text-[20px] font-semibold">Gemini API Key</h2>
+            <input
+              type="password"
+              value={keyDraft}
+              onChange={(e) => setKeyDraft(e.target.value)}
+              placeholder="AIza…"
+              className="h-11 w-full rounded-[10px] bg-foreground/[0.055] px-3 text-[15px] outline-none focus:ring-2 focus:ring-ring/40 dark:bg-white/[0.08]"
+            />
+            <p className="text-[13px] leading-snug text-muted-foreground">
+              Key 仅保存在本机 localStorage，不会上传到任何服务器。
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setGeminiKey("")
+                  setKeyDraft("")
+                  toast("API Key 已清除")
+                }}
+                disabled={!hasKey && !keyDraft}
+                className="h-12 flex-1 rounded-[12px] text-[17px] font-medium text-destructive disabled:opacity-40"
+              >
+                清除
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setGeminiKey(keyDraft)
+                  setKeySheet(false)
+                  toast(
+                    keyDraft.trim() ? "API Key 已保存" : "API Key 已清除",
+                  )
+                }}
+                className="h-12 flex-1 rounded-[12px] bg-primary text-[17px] font-medium text-primary-foreground"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+          <SheetTitle className="sr-only">Gemini API Key</SheetTitle>
+        </SheetContent>
+      </Sheet>
+
+      <AppleAlert
+        open={confirmReset}
+        onOpenChange={setConfirmReset}
+        title="Reset All Data?"
+        description="所有学习进度、自定义单词和统计记录都会被清空，此操作无法撤销。"
+        confirmLabel="Reset"
+        destructive
+        onConfirm={() => {
+          resetAll()
+          toast("数据已重置")
+        }}
+      />
     </div>
   )
 }

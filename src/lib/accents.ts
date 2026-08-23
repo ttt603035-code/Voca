@@ -1,110 +1,56 @@
-/** 柔和主题色预设（参考 iOS 系统色的柔和色调） */
+/** Apple 系统色主题预设（light / dark 双值） */
 export interface Accent {
   id: string
   name: string
-  /** 主色（oklch） */
-  primary: string
-  /** 主色上的文字色 */
-  primaryFg: string
+  /** 浅色模式主色 */
+  light: string
+  /** 深色模式主色 */
+  dark: string
+  /** 主色上的文字色（浅色模式） */
+  fg: string
+  /** 主色上的文字色（深色模式，缺省同 fg） */
+  fgDark?: string
 }
 
-export const DEFAULT_ACCENT_ID = "default"
+export const DEFAULT_ACCENT_ID = "apple-blue"
 
 export const ACCENTS: Accent[] = [
-  {
-    id: DEFAULT_ACCENT_ID,
-    name: "翡翠绿",
-    primary: "oklch(0.596 0.145 163.225)",
-    primaryFg: "oklch(0.979 0.021 166.113)",
-  },
-  {
-    id: "peach",
-    name: "蜜桃红",
-    primary: "oklch(0.68 0.14 25)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
-  {
-    id: "apricot",
-    name: "杏橙",
-    primary: "oklch(0.73 0.13 55)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
-  {
-    id: "cream",
-    name: "奶油黄",
-    primary: "oklch(0.8 0.13 85)",
-    primaryFg: "oklch(0.28 0.03 85)",
-  },
-  {
-    id: "mint",
-    name: "薄荷绿",
-    primary: "oklch(0.69 0.13 160)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
-  {
-    id: "teal",
-    name: "青瓷",
-    primary: "oklch(0.69 0.1 200)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
-  {
-    id: "mist",
-    name: "雾霾蓝",
-    primary: "oklch(0.67 0.11 240)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
-  {
-    id: "violet",
-    name: "紫罗兰",
-    primary: "oklch(0.65 0.12 285)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
-  {
-    id: "lilac",
-    name: "香芋紫",
-    primary: "oklch(0.7 0.11 320)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
-  {
-    id: "sakura",
-    name: "樱花粉",
-    primary: "oklch(0.71 0.13 350)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
-  {
-    id: "cocoa",
-    name: "可可棕",
-    primary: "oklch(0.64 0.07 60)",
-    primaryFg: "oklch(0.985 0 0)",
-  },
+  { id: "apple-blue", name: "系统蓝", light: "#007AFF", dark: "#0A84FF", fg: "#FFFFFF" },
+  { id: "red", name: "系统红", light: "#FF3B30", dark: "#FF453A", fg: "#FFFFFF" },
+  { id: "orange", name: "系统橙", light: "#FF9500", dark: "#FF9F0A", fg: "#FFFFFF" },
+  { id: "yellow", name: "系统黄", light: "#FFCC00", dark: "#FFD60A", fg: "#1C1C1E", fgDark: "#1C1C1E" },
+  { id: "green", name: "系统绿", light: "#34C759", dark: "#30D158", fg: "#FFFFFF" },
+  { id: "mint", name: "系统薄荷", light: "#00C7BE", dark: "#63E6E2", fg: "#1C1C1E", fgDark: "#1C1C1E" },
+  { id: "teal", name: "系统青", light: "#30B0C7", dark: "#40C8E0", fg: "#FFFFFF", fgDark: "#1C1C1E" },
+  { id: "cyan", name: "系统天蓝", light: "#32ADE6", dark: "#64D2FF", fg: "#FFFFFF", fgDark: "#1C1C1E" },
+  { id: "indigo", name: "系统靛", light: "#5856D6", dark: "#5E5CE6", fg: "#FFFFFF" },
+  { id: "purple", name: "系统紫", light: "#AF52DE", dark: "#BF5AF2", fg: "#FFFFFF" },
+  { id: "pink", name: "系统粉", light: "#FF2D55", dark: "#FF375F", fg: "#FFFFFF" },
+  { id: "brown", name: "系统棕", light: "#A2845E", dark: "#AC8E68", fg: "#FFFFFF" },
 ]
 
 export function getAccent(id: string | null | undefined): Accent {
   return ACCENTS.find((a) => a.id === id) ?? ACCENTS[0]
 }
 
-const ACCENT_VARS = [
-  "--primary",
-  "--primary-foreground",
-  "--ring",
-  "--sidebar-primary",
-  "--sidebar-primary-foreground",
-  "--sidebar-ring",
-]
+const VAR_KEYS = [
+  "--voca-accent",
+  "--voca-accent-dark",
+  "--voca-accent-fg",
+  "--voca-accent-fg-dark",
+] as const
 
-/** 将主题色应用为 CSS 变量；null 表示恢复默认 */
+/** 将主题色应用为 CSS 变量；null 表示恢复 Apple 系统蓝 */
 export function applyAccent(id: string | null): void {
   if (typeof document === "undefined") return
   const root = document.documentElement
   const accent = getAccent(id)
   if (accent.id === DEFAULT_ACCENT_ID) {
-    ACCENT_VARS.forEach((v) => root.style.removeProperty(v))
+    VAR_KEYS.forEach((v) => root.style.removeProperty(v))
     return
   }
-  root.style.setProperty("--primary", accent.primary)
-  root.style.setProperty("--primary-foreground", accent.primaryFg)
-  root.style.setProperty("--ring", accent.primary)
-  root.style.setProperty("--sidebar-primary", accent.primary)
-  root.style.setProperty("--sidebar-primary-foreground", accent.primaryFg)
-  root.style.setProperty("--sidebar-ring", accent.primary)
+  root.style.setProperty("--voca-accent", accent.light)
+  root.style.setProperty("--voca-accent-dark", accent.dark)
+  root.style.setProperty("--voca-accent-fg", accent.fg)
+  root.style.setProperty("--voca-accent-fg-dark", accent.fgDark ?? accent.fg)
 }

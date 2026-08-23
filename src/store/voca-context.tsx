@@ -64,6 +64,7 @@ function loadState(): VocaState {
 type Action =
   | { type: "add-word"; word: Omit<Word, "id"> }
   | { type: "update-word"; id: string; word: Omit<Word, "id"> }
+  | { type: "toggle-favorite"; id: string }
   | { type: "delete-word"; id: string }
   | { type: "reset-progress"; id: string }
   | { type: "rate"; wordId: string; rating: Rating }
@@ -107,6 +108,13 @@ function reducer(state: VocaState, action: Action): VocaState {
         ...state,
         words: state.words.map((w) =>
           w.id === action.id ? { ...action.word, id: w.id } : w,
+        ),
+      }
+    case "toggle-favorite":
+      return {
+        ...state,
+        words: state.words.map((w) =>
+          w.id === action.id ? { ...w, favorite: !w.favorite } : w,
         ),
       }
     case "delete-word": {
@@ -197,6 +205,7 @@ interface VocaContextValue {
   state: VocaState
   addWord: (word: Omit<Word, "id">) => void
   updateWord: (id: string, word: Omit<Word, "id">) => void
+  toggleFavorite: (id: string) => void
   deleteWord: (id: string) => void
   resetWordProgress: (id: string) => void
   rateWord: (wordId: string, rating: Rating) => void
@@ -230,6 +239,7 @@ export function VocaProvider({
       state,
       addWord: (word) => dispatch({ type: "add-word", word }),
       updateWord: (id, word) => dispatch({ type: "update-word", id, word }),
+      toggleFavorite: (id) => dispatch({ type: "toggle-favorite", id }),
       deleteWord: (id) => dispatch({ type: "delete-word", id }),
       resetWordProgress: (id) => dispatch({ type: "reset-progress", id }),
       rateWord: (wordId, rating) => dispatch({ type: "rate", wordId, rating }),

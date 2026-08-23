@@ -1,41 +1,42 @@
-import { Badge } from "@/components/ui/badge"
 import type { WordProgress } from "@/lib/types"
 import { todayStr } from "@/lib/srs"
+import { cn } from "@/lib/utils"
 
-export function wordStatusLabel(
+/** Apple 风格轻量状态：小圆点 + 文字（不用 Badge 堆叠） */
+export function wordStatusMeta(
   p: WordProgress,
   today = todayStr(),
-): { text: string; className: string } {
+): { label: string; color: string } {
   if (p.status === "new") {
-    return {
-      text: "未学习",
-      className: "border-transparent bg-muted text-muted-foreground",
-    }
+    return { label: "未学习", color: "#8E8E93" }
   }
   if (p.status === "mastered") {
-    return {
-      text: "已掌握",
-      className:
-        "border-transparent bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-    }
+    return { label: "已掌握", color: "#34C759" }
   }
   if (p.due <= today) {
-    return {
-      text: "待复习",
-      className: "border-transparent bg-amber-500/15 text-amber-600 dark:text-amber-400",
-    }
+    return { label: "待复习", color: "#FF9500" }
   }
-  return {
-    text: "学习中",
-    className: "border-transparent bg-sky-500/15 text-sky-600 dark:text-sky-400",
-  }
+  return { label: "学习中", color: "#32ADE6" }
 }
 
-export function WordStatusBadge({
+export function WordStatusText({
   progress,
+  className,
 }: {
   progress: WordProgress
+  className?: string
 }) {
-  const { text, className } = wordStatusLabel(progress)
-  return <Badge variant="outline" className={className}>{text}</Badge>
+  const { label, color } = wordStatusMeta(progress)
+  return (
+    <span
+      className={cn("flex items-center gap-1.5 text-[13px]", className)}
+      style={{ color }}
+    >
+      <span
+        className="size-1.5 rounded-full"
+        style={{ backgroundColor: color }}
+      />
+      {label}
+    </span>
+  )
 }

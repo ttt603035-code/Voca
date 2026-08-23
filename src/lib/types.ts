@@ -12,6 +12,7 @@ export interface Word {
   exampleZh: string
   level: Level
   custom?: boolean
+  favorite?: boolean
 }
 
 export type WordStatus = "new" | "learning" | "mastered"

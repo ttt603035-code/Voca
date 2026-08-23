@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <VocaProvider>
           <App />
-          <Toaster position="top-center" richColors />
+          <Toaster position="top-center" />
         </VocaProvider>
       </BrowserRouter>
     </ThemeProvider>
