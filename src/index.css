@@ -13,7 +13,9 @@
   --voca-accent-fg: #ffffff;
   --voca-accent-fg-dark: #ffffff;
 
-  --background: #f2f2f7;
+  /* 页面背景：纯白（Apple 风格）；分组/次级区域用极浅灰区分 */
+  --background: #ffffff;
+  --grouped: #f5f5f7;
   --foreground: #1c1c1e;
   --card: #ffffff;
   --card-foreground: #1c1c1e;
@@ -21,11 +23,11 @@
   --popover-foreground: #1c1c1e;
   --primary: var(--voca-accent);
   --primary-foreground: var(--voca-accent-fg);
-  --secondary: #e9e9ee;
+  --secondary: #f5f5f7;
   --secondary-foreground: #1c1c1e;
-  --muted: #ececf0;
+  --muted: #f5f5f7;
   --muted-foreground: #8e8e93;
-  --accent: #ececf0;
+  --accent: #f5f5f7;
   --accent-foreground: #1c1c1e;
   --destructive: #ff3b30;
   --border: #e3e3e8;
@@ -49,6 +51,7 @@
 
 .dark {
   --background: #000000;
+  --grouped: #1c1c1e;
   --foreground: #ffffff;
   --card: #1c1c1e;
   --card-foreground: #ffffff;
@@ -100,6 +103,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-grouped: var(--grouped);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);

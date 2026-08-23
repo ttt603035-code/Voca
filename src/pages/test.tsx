@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { speak } from "@/lib/speech"
+import { useT } from "@/lib/i18n"
+import { speakText } from "@/lib/speech"
 import { shuffle } from "@/lib/srs"
 import type { Word } from "@/lib/types"
 import { useVoca } from "@/store/voca-context"
@@ -38,15 +39,11 @@ function buildQuestions(words: Word[], count: number, mode: Mode): Question[] {
   return shuffle(words)
     .slice(0, count)
     .map((word) => {
-      const sameLevel = words.filter(
-        (w) => w.id !== word.id && w.level === word.level,
-      )
-      const otherLevel = words.filter(
-        (w) => w.id !== word.id && w.level !== word.level,
-      )
+      const sameList = words.filter((w) => w.id !== word.id && w.listId === word.listId)
+      const otherList = words.filter((w) => w.id !== word.id && w.listId !== word.listId)
       const distractors = [
-        ...shuffle(sameLevel).slice(0, 3),
-        ...shuffle(otherLevel),
+        ...shuffle(sameList).slice(0, 3),
+        ...shuffle(otherList),
       ].slice(0, 3)
       const toOption = (w: Word) => (mode === "word2meaning" ? w.meaning : w.word)
       const answer = toOption(word)
@@ -56,6 +53,7 @@ function buildQuestions(words: Word[], count: number, mode: Mode): Question[] {
 
 export function TestPage() {
   const { state, recordQuizAnswer, recordTime } = useVoca()
+  const { t } = useT()
   const navigate = useNavigate()
   const [count, setCount] = React.useState("10")
   const [mode, setMode] = React.useState<Mode>("word2meaning")
@@ -132,11 +130,11 @@ export function TestPage() {
   if (!questions) {
     return (
       <div className="space-y-5">
-        <LargeTitle title="Practice Test" />
+        <LargeTitle title={t("practiceTest")} back={() => navigate("/words")} />
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="mb-1.5 block text-[13px] text-muted-foreground">
-              Questions
+              {t("questions")}
             </span>
             <Select value={count} onValueChange={setCount}>
               <SelectTrigger className="w-full">
@@ -151,24 +149,21 @@ export function TestPage() {
           </label>
           <label className="block">
             <span className="mb-1.5 block text-[13px] text-muted-foreground">
-              Mode
+              {t("mode")}
             </span>
-            <Select
-              value={mode}
-              onValueChange={(v) => setMode(v as Mode)}
-            >
+            <Select value={mode} onValueChange={(v) => setMode(v as Mode)}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="word2meaning">Word → Meaning</SelectItem>
-                <SelectItem value="meaning2word">Meaning → Word</SelectItem>
+                <SelectItem value="word2meaning">{t("wordToMeaning")}</SelectItem>
+                <SelectItem value="meaning2word">{t("meaning2word")}</SelectItem>
               </SelectContent>
             </Select>
           </label>
         </div>
         <AppleButton onClick={start} disabled={state.words.length === 0}>
-          Start Test
+          {t("startTest")}
         </AppleButton>
       </div>
     )
@@ -180,7 +175,7 @@ export function TestPage() {
     const pct = answered.length > 0 ? Math.round((score / answered.length) * 100) : 0
     return (
       <div className="space-y-6">
-        <LargeTitle title="Practice Test" />
+        <LargeTitle title={t("practiceTest")} back={() => navigate("/words")} />
         <div className="pt-2 text-center">
           <p className="text-[56px] leading-none font-semibold tracking-[-0.03em] tabular-nums">
             {score}
@@ -189,7 +184,7 @@ export function TestPage() {
             </span>
           </p>
           <p className="mt-2 text-[15px] text-muted-foreground">
-            Accuracy {pct}%
+            {t("accuracyPct", { n: pct })}
           </p>
         </div>
         <InsetGroup>
@@ -210,10 +205,10 @@ export function TestPage() {
         </InsetGroup>
         <div className="flex gap-3">
           <AppleButton variant="tinted" className="flex-1" onClick={start}>
-            再测一轮
+            {t("testAgain")}
           </AppleButton>
           <AppleButton variant="plain" className="flex-1" onClick={() => navigate("/")}>
-            Done
+            {t("done")}
           </AppleButton>
         </div>
       </div>
@@ -232,7 +227,7 @@ export function TestPage() {
             if (timer.current !== null) window.clearTimeout(timer.current)
             setQuestions(null)
           }}
-          aria-label="退出测试"
+          aria-label={t("cancel")}
           className="flex size-9 items-center justify-center rounded-full text-muted-foreground active:bg-foreground/[0.06]"
         >
           <X className="size-5" />
@@ -251,9 +246,12 @@ export function TestPage() {
             </span>
             <button
               type="button"
-              onClick={() => speak(current.word.word)}
-              aria-label="朗读"
-              className="flex size-9 items-center justify-center rounded-full text-primary active:bg-foreground/[0.06]"
+              onClick={() =>
+                state.settings.sound &&
+                speakText(current.word.word, state.settings.voice)
+              }
+              aria-label={t("speak")}
+              className="flex size-10 items-center justify-center rounded-full text-primary active:bg-foreground/[0.06]"
             >
               <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 5 6 9H2v6h4l5 4V5z" />
@@ -280,13 +278,11 @@ export function TestPage() {
               onClick={() => pick(opt)}
               className={cn(
                 "min-h-[52px]",
-                picked !== null && isAnswer && "bg-[#34C759]/8",
-                picked !== null && isPicked && !isAnswer && "bg-[#FF3B30]/8",
+                picked !== null && isAnswer && "bg-[#34C759]/10",
+                picked !== null && isPicked && !isAnswer && "bg-[#FF3B30]/10",
                 picked !== null && !isAnswer && !isPicked && "opacity-50",
               )}
-              primary={
-                <span className="text-[16px]">{opt}</span>
-              }
+              primary={<span className="text-[16px]">{opt}</span>}
               trailing={
                 picked !== null && isAnswer ? (
                   <CheckCircle2 className="size-5 text-[#34C759]" />
@@ -300,21 +296,23 @@ export function TestPage() {
       </InsetGroup>
 
       {picked !== null && (
-        <div className="flex animate-fade-in items-center justify-between gap-3 rounded-[14px] bg-foreground/[0.04] p-4">
+        <div className="flex animate-fade-in items-center justify-between gap-3 rounded-[14px] bg-grouped p-4">
           <p className="min-w-0 text-[14px] text-muted-foreground">
             <span
               className={cn(
                 "font-medium",
-                picked === current.answer ? "text-[#34C759]" : "text-[#FF3B30]",
+                picked === current.answer
+                  ? "text-[#34C759]"
+                  : "text-[#FF3B30]",
               )}
             >
               {picked === current.answer
-                ? "Correct"
-                : `Answer: ${current.answer}`}
+                ? t("correctLabel")
+                : `${t("answerLabel")}: ${current.answer}`}
             </span>
           </p>
           <AppleButton size="sm" onClick={next} className="shrink-0">
-            {index + 1 >= questions.length ? "结果" : "Next"}
+            {index + 1 >= questions.length ? t("result") : t("next")}
           </AppleButton>
         </div>
       )}

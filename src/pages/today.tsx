@@ -4,32 +4,25 @@ import { toast } from "sonner"
 import {
   AppleButton,
   EmptyState,
+  GroupHeader,
   IconBtn,
   InsetGroup,
-  ListRow,
   LargeTitle,
+  ListRow,
   ProgressBar,
-  SectionTitle,
 } from "@/components/kit/primitives"
+import { dateStr, greetingKey, useT } from "@/lib/i18n"
 import { calcStreak, todayStr } from "@/lib/srs"
-import { dueWords, useVoca } from "@/store/voca-context"
-
-function greeting(): string {
-  const h = new Date().getHours()
-  if (h < 5) return "Good night"
-  if (h < 11) return "Good morning"
-  if (h < 13) return "Good noon"
-  if (h < 18) return "Good afternoon"
-  return "Good evening"
-}
+import { dueWords, newWords, useVoca } from "@/store/voca-context"
 
 export function TodayPage() {
   const { state } = useVoca()
+  const { t, locale } = useT()
   const navigate = useNavigate()
   const today = todayStr()
 
   const due = dueWords(state)
-  const newCount = state.words.filter((w) => !state.progress[w.id]).length
+  const newCount = newWords(state).length
   const todayStat = state.activity[today]
   const reviewedToday = todayStat?.reviews ?? 0
   const streak = calcStreak(state.activity)
@@ -47,39 +40,33 @@ export function TodayPage() {
       ? Math.min(100, (reviewedToday / Math.max(goal, reviewedToday)) * 100)
       : 0
 
-  const dateStr = new Date().toLocaleDateString("zh-CN", {
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  })
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       <LargeTitle
-        title="Today"
+        title={t("tabToday")}
         actions={
           <IconBtn
             icon={Settings2}
-            label="Settings"
+            label={t("settings")}
             onClick={() => navigate("/settings")}
           />
         }
       />
 
       <p className="-mt-4 text-[17px] text-muted-foreground">
-        {greeting()} · {dateStr}
+        {t(greetingKey())} · {dateStr(locale)}
       </p>
 
       {/* Today's Review */}
       <section className="space-y-4">
-        <SectionTitle>Today&apos;s Review</SectionTitle>
+        <GroupHeader>{t("todaysReview")}</GroupHeader>
         <div>
           <div className="flex items-baseline gap-2">
             <span className="text-[56px] leading-[1.05] font-semibold tracking-[-0.03em] tabular-nums">
               {due.length}
             </span>
             <span className="text-[15px] text-muted-foreground">
-              words to review
+              {t("wordsToReview")}
             </span>
           </div>
           <div className="mt-4 flex items-center gap-3">
@@ -93,33 +80,30 @@ export function TodayPage() {
               className="size-3.5"
               style={{ color: streak > 0 ? "#FF9500" : "#8E8E93" }}
             />
-            {streak > 0 ? `${streak}-day streak` : "Start your streak today"}
+            {streak > 0 ? t("streak", { n: streak }) : t("startStreak")}
           </p>
         </div>
-        <AppleButton
-          onClick={() => navigate("/review")}
-          disabled={queueSize === 0}
-        >
-          Start Review
+        <AppleButton onClick={() => navigate("/review")} disabled={queueSize === 0}>
+          {t("startReview")}
         </AppleButton>
         {queueSize === 0 && (
           <p className="text-center text-[13px] text-muted-foreground">
-            暂无可学习单词
+            {t("noWordsToLearn")}
           </p>
         )}
       </section>
 
       {/* Difficult Words */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <SectionTitle>Difficult Words</SectionTitle>
+      <section className="space-y-2.5">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[17px] font-semibold">{t("difficultWords")}</span>
           {difficult.length > 0 && (
             <button
               type="button"
               onClick={() => navigate("/mistakes")}
               className="text-[15px] text-primary"
             >
-              全部
+              {t("seeAll")}
             </button>
           )}
         </div>
@@ -141,7 +125,7 @@ export function TodayPage() {
                 secondary={w.meaning}
                 trailing={
                   <span className="text-[13px] font-medium tabular-nums text-[#FF3B30] dark:text-[#FF453A]">
-                    Wrong ×{p!.wrong}
+                    {t("wrong", { n: p!.wrong })}
                   </span>
                 }
               />
@@ -151,27 +135,25 @@ export function TodayPage() {
           <EmptyState
             icon={Flame}
             tint="#34C759"
-            title="No difficult words"
-            description="还没有错误记录，保持这个节奏"
+            title={t("noDifficult")}
+            description={t("noDifficultDesc")}
           />
         )}
       </section>
 
       {/* AI Reading */}
-      <section className="space-y-3">
-        <SectionTitle>AI Reading</SectionTitle>
+      <section className="space-y-2.5">
+        <GroupHeader>{t("aiReading")}</GroupHeader>
         <InsetGroup>
           <ListRow
             icon={Sparkles}
             tint="#AF52DE"
             as="button"
             onClick={() =>
-              toast("AI Reading 即将上线：将基于你的词汇生成短文", {
-                description: "在 Settings 中配置 Gemini API Key 后启用",
-              })
+              toast(t("aiReadingToast"), { description: t("aiReadingToastDesc") })
             }
-            primary="Generate Reading"
-            secondary="基于你的词汇生成阅读短文"
+            primary={t("generateReading")}
+            secondary={t("generateReadingDesc")}
             chevron
           />
         </InsetGroup>

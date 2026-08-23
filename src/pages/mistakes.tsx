@@ -1,86 +1,64 @@
 import { useNavigate } from "react-router-dom"
 import * as React from "react"
+import { CheckCircle2 } from "lucide-react"
 import {
   AppleButton,
   EmptyState,
-  InsetGroup,
   LargeTitle,
-  ListRow,
 } from "@/components/kit/primitives"
-import { CheckCircle2 } from "lucide-react"
-import { WordSheet } from "@/components/word-sheet"
+import { WordList } from "@/components/word-rows"
+import { useT } from "@/lib/i18n"
 import { useVoca } from "@/store/voca-context"
-import type { Word } from "@/lib/types"
 
 export function MistakesPage() {
   const { state } = useVoca()
+  const { t } = useT()
   const navigate = useNavigate()
-  const [sheet, setSheet] = React.useState<{ word: Word | null } | null>(null)
 
-  const selectedWord = sheet?.word
-    ? (state.words.find((w) => w.id === sheet.word!.id) ?? null)
-    : null
-
-  const mistakes = state.words
-    .map((w) => ({ w, p: state.progress[w.id] }))
-    .filter((x) => x.p && x.p.wrong > 0)
-    .sort(
-      (a, b) =>
-        b.p!.wrong - a.p!.wrong ||
-        (b.p!.lastReviewed ?? "").localeCompare(a.p!.lastReviewed ?? ""),
-    )
+  const mistakes = React.useMemo(
+    () =>
+      state.words
+        .filter((w) => (state.progress[w.id]?.wrong ?? 0) > 0)
+        .sort(
+          (a, b) =>
+            (state.progress[b.id]?.wrong ?? 0) -
+              (state.progress[a.id]?.wrong ?? 0) ||
+            (state.progress[b.id]?.lastReviewed ?? "").localeCompare(
+              state.progress[a.id]?.lastReviewed ?? "",
+            ),
+        ),
+    [state.words, state.progress],
+  )
 
   return (
     <div className="space-y-5">
-      <LargeTitle title="Mistakes" />
-
+      <LargeTitle title={t("mistakes")} back={() => navigate("/words")} />
       {mistakes.length > 0 ? (
         <>
-          <InsetGroup>
-            {mistakes.map(({ w, p }) => (
-              <ListRow
-                key={w.id}
-                as="button"
-                onClick={() => setSheet({ word: w })}
-                primary={
-                  <span className="flex items-baseline gap-2">
-                    {w.word}
-                    <span className="text-[13px] font-normal text-muted-foreground/80">
-                      {w.ipa}
-                    </span>
-                  </span>
-                }
-                secondary={w.meaning}
-                trailing={
-                  <span className="text-[13px] font-medium tabular-nums text-[#FF3B30] dark:text-[#FF453A]">
-                    Wrong ×{p!.wrong}
-                  </span>
-                }
-              />
-            ))}
-          </InsetGroup>
+          <p className="-mt-3 text-[15px] text-muted-foreground">
+            {mistakes.length} {t("wordsNoun")}
+          </p>
+          <WordList
+            words={mistakes}
+            emptyTitle={t("noMistakes")}
+            emptyDesc={t("noMistakesDesc")}
+          />
           <AppleButton
             variant="tinted"
             className="w-fit px-6"
             onClick={() => navigate("/review?filter=mistakes")}
           >
-            Review Mistakes
+            {t("reviewMistakes")}
           </AppleButton>
         </>
       ) : (
         <EmptyState
           icon={CheckCircle2}
           tint="#34C759"
-          title="No Mistakes"
-          description="答错的单词会出现在这里，随时回来巩固。"
+          title={t("noMistakes")}
+          description={t("noMistakesDesc")}
         />
       )}
-
-      <WordSheet
-        open={!!sheet}
-        word={selectedWord}
-        onClose={() => setSheet(null)}
-      />
     </div>
   )
 }

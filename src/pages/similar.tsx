@@ -1,6 +1,6 @@
 import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react"
 import * as React from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import {
   AppleButton,
   EmptyState,
@@ -10,19 +10,18 @@ import {
   ListRow,
   SectionTitle,
 } from "@/components/kit/primitives"
-import { speak } from "@/lib/speech"
-import {
-  CONFUSABLE_GROUPS,
-  type ConfusableGroup,
-  type ConfusableSentence,
-} from "@/lib/confusables"
+import { useT } from "@/lib/i18n"
+import { useSpeak } from "@/lib/speech"
 import { shuffle } from "@/lib/srs"
+import type { SimilarGroup, SimilarWordEntry } from "@/lib/types"
+import { useVoca } from "@/store/voca-context"
 import { cn } from "@/lib/utils"
 
-function buildOptions(group: ConfusableGroup): string[] {
+function buildOptions(group: SimilarGroup, allGroups: SimilarGroup[]): string[] {
   const own = group.words.map((w) => w.word)
   const others = shuffle(
-    CONFUSABLE_GROUPS.filter((g) => g.id !== group.id)
+    allGroups
+      .filter((g) => g.id !== group.id)
       .flatMap((g) => g.words.map((w) => w.word)),
   ).slice(0, Math.max(0, 4 - own.length))
   return shuffle([...own, ...others])
@@ -30,15 +29,28 @@ function buildOptions(group: ConfusableGroup): string[] {
 
 /* ─────────────── 对比练习 ─────────────── */
 
-function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => void }) {
-  const [order, setOrder] = React.useState<ConfusableSentence[]>(() =>
-    shuffle(group.sentences),
+function Practice({
+  group,
+  onBack,
+}: {
+  group: SimilarGroup
+  onBack: () => void
+}) {
+  const { state } = useVoca()
+  const { t } = useT()
+  const { speak } = useSpeak()
+
+  // 练习：每组词各一道（听发音看词，选正确释义）
+  const [order, setOrder] = React.useState<SimilarWordEntry[]>(() =>
+    shuffle(group.words),
   )
-  const [options, setOptions] = React.useState<string[]>(() => buildOptions(group))
+  const [options, setOptions] = React.useState<string[]>(() =>
+    buildOptions(group, state.similarGroups),
+  )
   const [index, setIndex] = React.useState(0)
   const [picked, setPicked] = React.useState<string | null>(null)
   const [results, setResults] = React.useState<
-    { s: ConfusableSentence; picked: string; correct: boolean }[]
+    { entry: SimilarWordEntry; picked: string; correct: boolean }[]
   >([])
   const [done, setDone] = React.useState(false)
   const timer = React.useRef<number | null>(null)
@@ -53,8 +65,8 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
   const current = order[index] ?? null
 
   function restart() {
-    setOrder(shuffle(group.sentences))
-    setOptions(buildOptions(group))
+    setOrder(shuffle(group.words))
+    setOptions(buildOptions(group, state.similarGroups))
     setIndex(0)
     setPicked(null)
     setResults([])
@@ -72,8 +84,8 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
   function pick(option: string) {
     if (!current || picked !== null) return
     setPicked(option)
-    const correct = option.toLowerCase() === current.answer.toLowerCase()
-    setResults((r) => [...r, { s: current, picked: option, correct }])
+    const correct = option.toLowerCase() === current.word.toLowerCase()
+    setResults((r) => [...r, { entry: current, picked: option, correct }])
     timer.current = window.setTimeout(() => {
       timer.current = null
       goNext()
@@ -95,12 +107,10 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
         <EmptyState
           icon={CheckCircle2}
           tint="#34C759"
-          title={`Practice Complete`}
-          description={`${score} / ${results.length} · ${
-            score === results.length ? "这组词已经分清了" : "看看错在哪，再来一遍"
-          }`}
+          title={t("practiceComplete")}
+          description={`${score} / ${results.length}`}
         >
-          <ul className="w-full max-w-md divide-y divide-border/70 rounded-[19px] bg-card py-1 text-left">
+          <ul className="w-full max-w-md divide-y divide-border/70 rounded-[19px] bg-grouped py-1 text-left">
             {results.map((r, i) => (
               <li key={i} className="flex items-start gap-2.5 px-4 py-3 text-[15px]">
                 {r.correct ? (
@@ -109,12 +119,16 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
                   <XCircle className="mt-0.5 size-[18px] shrink-0 text-[#FF3B30]" />
                 )}
                 <span className="min-w-0">
-                  <span className="italic text-muted-foreground">
-                    {r.s.text.replace("___", `【${r.s.answer}】`)}
-                  </span>
+                  <span className="font-medium">{r.entry.word}</span>
+                  {r.entry.meaning && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {r.entry.meaning}
+                    </span>
+                  )}
                   {!r.correct && (
                     <span className="mt-0.5 block text-[13px] text-[#FF3B30]">
-                      你选了：{r.picked}
+                      {t("youPicked")}：{r.picked}
                     </span>
                   )}
                 </span>
@@ -123,14 +137,14 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
           </ul>
           <div className="mt-5 flex w-56 flex-col gap-2">
             <AppleButton variant="tinted" onClick={restart}>
-              再练一遍
+              {t("practiceAgain")}
             </AppleButton>
             <button
               type="button"
               onClick={onBack}
               className="text-center text-[17px] font-medium text-primary"
             >
-              返回对比
+              {t("backToCompare")}
             </button>
           </div>
         </EmptyState>
@@ -149,32 +163,47 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
           className="flex items-center gap-0.5 text-[17px] font-medium text-primary"
         >
           <ArrowLeft className="size-5" />
-          返回
+          {t("back")}
         </button>
         <span className="text-[14px] text-muted-foreground tabular-nums">
           {index + 1} / {order.length}
         </span>
       </div>
 
-      <div className="pt-6 text-center">
-        <p className="text-[20px] leading-relaxed font-medium">
-          {current.text.split("___").map((part, i, arr) => (
-            <React.Fragment key={i}>
-              {part}
-              {i < arr.length - 1 && (
-                <span className="mx-1 inline-block min-w-14 border-b-2 border-dashed border-primary/50 px-1 text-center text-primary">
-                  {picked ?? ""}
-                </span>
-              )}
-            </React.Fragment>
-          ))}
+      {/* 题目：听发音 + 看词性，选正确的释义 */}
+      <div className="flex flex-col items-center gap-3 pt-4 text-center">
+        <button
+          type="button"
+          onClick={() => speak(current.word)}
+          aria-label={t("speak")}
+          className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform active:scale-90"
+        >
+          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 5 6 9H2v6h4l5 4V5z" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+        </button>
+        <span className="text-[32px] font-semibold tracking-[-0.02em]">
+          {current.word}
+        </span>
+        {current.ipa && (
+          <span className="text-[15px] text-muted-foreground">{current.ipa}</span>
+        )}
+        <p className="text-[14px] text-muted-foreground">
+          {t("meaningLabel")}
         </p>
       </div>
 
       <InsetGroup>
         {options.map((opt) => {
+          const entry =
+            group.words.find((w) => w.word.toLowerCase() === opt.toLowerCase()) ??
+            state.similarGroups
+              .flatMap((g) => g.words)
+              .find((w) => w.word.toLowerCase() === opt.toLowerCase())
           const isAnswer =
-            opt.toLowerCase() === current.answer.toLowerCase()
+            opt.toLowerCase() === current.word.toLowerCase()
           const isPicked = opt === picked
           return (
             <ListRow
@@ -183,11 +212,12 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
               onClick={() => pick(opt)}
               className={cn(
                 "min-h-[52px]",
-                picked !== null && isAnswer && "bg-[#34C759]/8",
-                picked !== null && isPicked && !isAnswer && "bg-[#FF3B30]/8",
+                picked !== null && isAnswer && "bg-[#34C759]/10",
+                picked !== null && isPicked && !isAnswer && "bg-[#FF3B30]/10",
                 picked !== null && !isAnswer && !isPicked && "opacity-50",
               )}
-              primary={opt}
+              primary={<span className="text-[16px]">{opt}</span>}
+              secondary={entry?.meaning}
               trailing={
                 picked !== null && isAnswer ? (
                   <CheckCircle2 className="size-5 text-[#34C759]" />
@@ -201,24 +231,26 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
       </InsetGroup>
 
       {picked !== null && (
-        <div className="flex animate-fade-in items-center justify-between gap-3 rounded-[14px] bg-foreground/[0.04] p-4">
-          <p className="min-w-0 text-[14px] leading-snug text-muted-foreground">
+        <div className="flex animate-fade-in items-center justify-between gap-3 rounded-[14px] bg-grouped p-4">
+          <p className="min-w-0 text-[14px] text-muted-foreground">
             <span
               className={cn(
                 "font-medium",
-                picked.toLowerCase() === current.answer.toLowerCase()
+                picked.toLowerCase() === current.word.toLowerCase()
                   ? "text-[#34C759]"
                   : "text-[#FF3B30]",
               )}
             >
-              {picked.toLowerCase() === current.answer.toLowerCase()
-                ? "Correct"
-                : `Answer: ${current.answer}`}
+              {picked.toLowerCase() === current.word.toLowerCase()
+                ? t("correctLabel")
+                : `${t("answerLabel")}: ${current.word}`}
             </span>
-            <span className="mt-0.5 block">{current.zh}</span>
+            {current.meaning && (
+              <span className="mt-0.5 block">{current.meaning}</span>
+            )}
           </p>
           <AppleButton size="sm" onClick={next} className="shrink-0">
-            {index + 1 >= order.length ? "结果" : "Next"}
+            {index + 1 >= order.length ? t("result") : t("next")}
           </AppleButton>
         </div>
       )}
@@ -229,19 +261,21 @@ function Practice({ group, onBack }: { group: ConfusableGroup; onBack: () => voi
 /* ─────────────── 词组列表 ─────────────── */
 
 export function SimilarPage() {
+  const { state } = useVoca()
+  const { t } = useT()
   const navigate = useNavigate()
   return (
     <div className="space-y-5">
-      <LargeTitle title="Similar Words" />
-      <GroupHeader>容易混淆的单词组，点进去对比练习</GroupHeader>
+      <LargeTitle title={t("similarWords")} />
+      <GroupHeader>{t("similarDesc")}</GroupHeader>
       <InsetGroup>
-        {CONFUSABLE_GROUPS.map((g) => (
+        {state.similarGroups.map((g) => (
           <ListRow
             key={g.id}
             as="button"
             onClick={() => navigate(`/similar/${g.id}`)}
-            primary={g.words.map((w) => w.word).join(" · ")}
-            secondary={`${g.words.length} words`}
+            primary={g.title}
+            secondary={t("wordsPlural", { n: g.words.length })}
             chevron
           />
         ))}
@@ -255,72 +289,76 @@ export function SimilarPage() {
 export function SimilarGroupPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const group = CONFUSABLE_GROUPS.find((g) => g.id === id) ?? null
+  const { state } = useVoca()
+  const { t } = useT()
+  const { speak } = useSpeak()
   const [practicing, setPracticing] = React.useState(false)
+
+  const group = state.similarGroups.find((g) => g.id === id) ?? null
 
   if (!group) {
     return (
       <div className="space-y-5">
-        <LargeTitle title="Similar Words" back={() => navigate("/similar")} />
-        <EmptyState icon={XCircle} tint="#FF3B30" title="未找到该词组" />
+        <LargeTitle title={t("similarWords")} back={() => navigate("/similar")} />
+        <EmptyState title={t("similarNotFound")} />
       </div>
     )
   }
 
   if (practicing) {
-    return <Practice group={group} onBack={() => setPracticing(false)} />
+    return <Practice key={group.id} group={group} onBack={() => setPracticing(false)} />
   }
 
   return (
     <div className="space-y-7">
       <LargeTitle
-        title={group.words.map((w) => w.word).join(" · ")}
+        title={group.title}
         back={() => navigate("/similar")}
       />
 
       {/* 对比布局：iPad 两列，iPhone 堆叠 */}
       <div className="grid gap-3 lg:grid-cols-2">
-        {group.words.map((w, i) => (
-          <div
-            key={w.word}
-            className={cn(
-              "rounded-[19px] bg-card p-5",
-              i > 0 && "lg:border-l-0",
-            )}
-          >
+        {group.words.map((w) => (
+          <div key={w.word} className="rounded-[19px] bg-grouped p-5">
             <button
               type="button"
               onClick={() => speak(w.word)}
-              className="text-left"
+              className="flex items-center gap-2 text-left"
             >
               <span className="text-[26px] font-semibold tracking-[-0.02em]">
                 {w.word}
               </span>
+              <svg className="size-4 text-muted-foreground/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 5 6 9H2v6h4l5 4V5z" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
             </button>
             <p className="mt-1 text-[13px] text-muted-foreground">
-              {w.pos} · {w.ipa}
+              {[w.pos, w.ipa].filter(Boolean).join(" · ")}
             </p>
-            <p className="mt-2 text-[17px]">{w.meaning}</p>
-            <p className="mt-2 text-[14px] leading-snug text-muted-foreground">
-              {w.diff}
-            </p>
+            {w.meaning && <p className="mt-2 text-[17px]">{w.meaning}</p>}
+            {w.diff && (
+              <p className="mt-2 text-[14px] leading-snug text-muted-foreground">
+                {w.diff}
+              </p>
+            )}
           </div>
         ))}
       </div>
 
       {/* Key Difference */}
-      <section className="space-y-2">
-        <SectionTitle>Key Difference</SectionTitle>
-        <p className="text-[16px] leading-relaxed">{group.tip}</p>
-      </section>
+      {group.tip && (
+        <section className="space-y-2">
+          <SectionTitle>{t("keyDifference")}</SectionTitle>
+          <p className="text-[16px] leading-relaxed">{group.tip}</p>
+        </section>
+      )}
 
-      <AppleButton onClick={() => setPracticing(true)}>Practice</AppleButton>
-      <Link
-        to="/words"
-        className="inline-block text-[17px] font-medium text-primary"
-      >
-        去单词本查看这些词
-      </Link>
+      {group.words.length >= 2 && (
+        <AppleButton onClick={() => setPracticing(true)}>
+          {t("practice")}
+        </AppleButton>
+      )}
     </div>
   )
 }

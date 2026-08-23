@@ -1,19 +1,34 @@
-export type Level = "A1" | "A2" | "B1" | "B2" | "C1"
+/* ─────────────────────── 词库结构（Book → List → Word 三层，顺序永久保留） ─────────────────────── */
 
-export const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1"]
+export interface Book {
+  id: string
+  name: string
+  builtIn?: boolean
+}
+
+export interface VocaList {
+  id: string
+  bookId: string
+  name: string
+  listOrder: number
+}
 
 export interface Word {
   id: string
+  listId: string
+  /** 词书内原始序号，永久保留，不可重排 */
+  wordOrder: number
   word: string
   ipa: string
   pos: string
   meaning: string
   example: string
   exampleZh: string
-  level: Level
   custom?: boolean
   favorite?: boolean
 }
+
+/* ─────────────────────── 学习进度 ─────────────────────── */
 
 export type WordStatus = "new" | "learning" | "mastered"
 
@@ -28,9 +43,7 @@ export interface WordProgress {
   interval: number
   /** 下次复习日期（yyyy-mm-dd） */
   due: string
-  /** 总复习次数 */
   reps: number
-  /** 遗忘次数 */
   lapses: number
   correct: number
   wrong: number
@@ -40,25 +53,52 @@ export interface WordProgress {
 }
 
 export interface DayStat {
-  /** 当天学习的单词总数（learned + reviewed） */
   reviews: number
-  /** 当天新学的词数 */
   learned: number
-  /** 当天复习的词数 */
   reviewed: number
-  /** 当天学习时长（秒） */
   seconds: number
 }
 
+/* ─────────────────────── 易混词（Similar Words） ─────────────────────── */
+
+export interface SimilarWordEntry {
+  word: string
+  ipa?: string
+  pos?: string
+  meaning?: string
+  diff?: string
+  /** 若该词存在于词库中，记录 word id 以便关联 */
+  wordId?: string
+}
+
+export interface SimilarGroup {
+  id: string
+  title: string
+  tip?: string
+  words: SimilarWordEntry[]
+  builtIn?: boolean
+}
+
+/* ─────────────────────── 全局状态 ─────────────────────── */
+
+export type Lang = "zh" | "en"
+
 export interface VocaState {
+  books: Book[]
+  lists: VocaList[]
   words: Word[]
+  similarGroups: SimilarGroup[]
   progress: Record<string, WordProgress>
   settings: {
     dailyGoal: number
-    /** 主题色预设 id，null 为默认翡翠绿 */
     accentId: string | null
-    /** Gemini API Key（预留，后续接入 AI 功能） */
     geminiKey: string
+    /** 界面语言 */
+    language: Lang
+    /** 发音声音 */
+    voice: "en-US" | "en-GB"
+    /** 是否启用发音 */
+    sound: boolean
   }
   /** key: yyyy-mm-dd */
   activity: Record<string, DayStat>

@@ -9,31 +9,34 @@ import {
   Settings,
 } from "lucide-react"
 import { NavLink } from "react-router-dom"
+import { useT } from "@/lib/i18n"
+import type { LocaleKey } from "@/lib/locales"
 import { cn } from "@/lib/utils"
 
 interface Item {
   to: string
-  label: string
+  labelKey: LocaleKey
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
   tint: string
   end?: boolean
 }
 
 const MAIN: Item[] = [
-  { to: "/", label: "Today", icon: Home, tint: "#007AFF", end: true },
-  { to: "/words", label: "Words", icon: BookOpen, tint: "#34C759" },
-  { to: "/review", label: "Review", icon: Layers, tint: "#FF9500" },
-  { to: "/insights", label: "Insights", icon: ChartLine, tint: "#AF52DE" },
+  { to: "/", labelKey: "tabToday", icon: Home, tint: "#007AFF", end: true },
+  { to: "/words", labelKey: "tabWords", icon: BookOpen, tint: "#34C759" },
+  { to: "/review", labelKey: "tabReview", icon: Layers, tint: "#FF9500" },
+  { to: "/insights", labelKey: "tabInsights", icon: ChartLine, tint: "#AF52DE" },
 ]
 
 const MORE: Item[] = [
-  { to: "/similar", label: "Similar Words", icon: Copy, tint: "#30B0C7" },
-  { to: "/mistakes", label: "Mistakes", icon: CircleX, tint: "#FF3B30" },
-  { to: "/test", label: "Practice Test", icon: ListChecks, tint: "#FFCC00" },
-  { to: "/settings", label: "Settings", icon: Settings, tint: "#8E8E93" },
+  { to: "/similar", labelKey: "similarWords", icon: Copy, tint: "#30B0C7" },
+  { to: "/mistakes", labelKey: "mistakes", icon: CircleX, tint: "#FF3B30" },
+  { to: "/test", labelKey: "practiceTest", icon: ListChecks, tint: "#FFCC00" },
+  { to: "/settings", labelKey: "settings", icon: Settings, tint: "#8E8E93" },
 ]
 
 function SideItem({ item }: { item: Item }) {
+  const { t } = useT()
   return (
     <NavLink
       to={item.to}
@@ -65,7 +68,7 @@ function SideItem({ item }: { item: Item }) {
               style={isActive ? { color: "#fff" } : { color: item.tint }}
             />
           </span>
-          {item.label}
+          {t(item.labelKey)}
         </>
       )}
     </NavLink>
@@ -74,21 +77,25 @@ function SideItem({ item }: { item: Item }) {
 
 /** iPadOS 风格侧边导航（Settings / Mail 式分组） */
 export function SideNav() {
+  const { t } = useT()
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] flex-col gap-5 overflow-y-auto border-r border-black/[0.05] bg-background px-4 pt-7 pb-6 lg:flex dark:border-white/[0.06]">
-      <nav className="space-y-0.5 rounded-[14px] bg-card p-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+      <nav className="space-y-0.5 rounded-[14px] bg-grouped p-1.5">
         {MAIN.map((item) => (
           <SideItem key={item.to} item={item} />
         ))}
       </nav>
       <div>
         <p className="mb-2 px-2.5 text-[13px] text-muted-foreground">More</p>
-        <nav className="space-y-0.5 rounded-[14px] bg-card p-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <nav className="space-y-0.5 rounded-[14px] bg-grouped p-1.5">
           {MORE.map((item) => (
             <SideItem key={item.to} item={item} />
           ))}
         </nav>
       </div>
+      <p className="mt-auto px-2.5 text-[12px] text-muted-foreground/70">
+        Voca · {t("appDesc")}
+      </p>
     </aside>
   )
 }

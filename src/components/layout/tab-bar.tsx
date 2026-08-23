@@ -1,23 +1,26 @@
 import { BookOpen, ChartLine, Home, Layers } from "lucide-react"
 import { NavLink } from "react-router-dom"
+import { useT } from "@/lib/i18n"
+import type { LocaleKey } from "@/lib/locales"
 import { cn } from "@/lib/utils"
 
 export const TABS: {
   to: string
-  label: string
+  key: LocaleKey
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   end?: boolean
 }[] = [
-  { to: "/", label: "Today", icon: Home, end: true },
-  { to: "/words", label: "Words", icon: BookOpen },
-  { to: "/review", label: "Review", icon: Layers },
-  { to: "/insights", label: "Insights", icon: ChartLine },
+  { to: "/", key: "tabToday", icon: Home, end: true },
+  { to: "/words", key: "tabWords", icon: BookOpen },
+  { to: "/review", key: "tabReview", icon: Layers },
+  { to: "/insights", key: "tabInsights", icon: ChartLine },
 ]
 
 export function TabBar() {
+  const { t } = useT()
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-black/[0.06] bg-card/90 backdrop-blur-xl lg:hidden dark:border-white/[0.08] dark:bg-[#1c1c1e]/90"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-black/[0.06] bg-background/90 backdrop-blur-xl lg:hidden dark:border-white/[0.08]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="主导航"
     >
@@ -42,11 +45,11 @@ export function TabBar() {
                 />
                 <span
                   className={cn(
-                    "text-[10px] leading-none",
+                    "max-w-full truncate text-[10px] leading-none",
                     isActive ? "font-medium" : "font-normal",
                   )}
                 >
-                  {tab.label}
+                  {t(tab.key)}
                 </span>
               </>
             )}

@@ -55,7 +55,7 @@ export function GroupHeader({ children }: { children: React.ReactNode }) {
 
 /* ───────────────────────── 分组容器 / 列表行 ───────────────────────── */
 
-/** iOS inset grouped list 容器 */
+/** iOS inset grouped list 容器（白底页面上的极浅灰分组） */
 export function InsetGroup({
   className,
   children,
@@ -68,7 +68,7 @@ export function InsetGroup({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[19px] bg-card",
+        "overflow-hidden rounded-[19px] bg-grouped",
         dividers && "divide-y divide-border/70",
         className,
       )}
@@ -380,20 +380,24 @@ export function EmptyState({
   description,
   children,
 }: {
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+  icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
   tint?: string
   title: string
   description?: React.ReactNode
   children?: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 py-16 text-center animate-fade-in">
-      <div
-        className="flex size-14 items-center justify-center rounded-full"
-        style={{ backgroundColor: "color-mix(in oklab, " + tint + " 12%, transparent)" }}
-      >
-        <Icon className="size-7" style={{ color: tint }} />
-      </div>
+    <div className="flex flex-col items-center gap-3 py-14 text-center animate-fade-in">
+      {Icon && (
+        <div
+          className="flex size-14 items-center justify-center rounded-full"
+          style={{
+            backgroundColor: `color-mix(in oklab, ${tint} 12%, transparent)`,
+          }}
+        >
+          <Icon className="size-7" style={{ color: tint }} />
+        </div>
+      )}
       <div>
         <p className="text-[17px] font-semibold">{title}</p>
         {description && (
@@ -418,6 +422,7 @@ export function AppleAlert({
   cancelLabel = "取消",
   destructive,
   onConfirm,
+  rows,
 }: {
   open: boolean
   onOpenChange: (o: boolean) => void
@@ -426,7 +431,9 @@ export function AppleAlert({
   confirmLabel?: string
   cancelLabel?: string
   destructive?: boolean
-  onConfirm: () => void
+  onConfirm?: () => void
+  /** 自定义多行操作（如导入冲突：更新 / 副本 / 取消） */
+  rows?: { label: string; onClick: () => void; destructive?: boolean }[]
 }) {
   return (
     <AlertDialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -447,35 +454,58 @@ export function AppleAlert({
               </AlertDialogPrimitive.Description>
             )}
           </div>
-          <div
-            className={cn(
-              "grid border-t border-border",
-              cancelLabel ? "grid-cols-2 divide-x divide-border" : "grid-cols-1",
-            )}
-          >
-            {cancelLabel && (
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="h-[46px] bg-transparent text-[17px] font-medium text-primary transition-colors active:bg-foreground/[0.05]"
-              >
-                {cancelLabel}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                onConfirm()
-                onOpenChange(false)
-              }}
+          {rows ? (
+            <div className="grid grid-cols-1 divide-y divide-border border-t border-border">
+              {rows.map((r) => (
+                <button
+                  key={r.label}
+                  type="button"
+                  onClick={() => {
+                    r.onClick()
+                    onOpenChange(false)
+                  }}
+                  className={cn(
+                    "h-[46px] bg-transparent text-[17px] transition-colors active:bg-foreground/[0.05]",
+                    r.destructive
+                      ? "font-semibold text-destructive"
+                      : "font-medium text-primary",
+                  )}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div
               className={cn(
-                "h-[46px] bg-transparent text-[17px] transition-colors active:bg-foreground/[0.05]",
-                destructive ? "font-semibold text-destructive" : "font-medium text-primary",
+                "grid border-t border-border",
+                cancelLabel ? "grid-cols-2 divide-x divide-border" : "grid-cols-1",
               )}
             >
-              {confirmLabel}
-            </button>
-          </div>
+              {cancelLabel && (
+                <button
+                  type="button"
+                  onClick={() => onOpenChange(false)}
+                  className="h-[46px] bg-transparent text-[17px] font-medium text-primary transition-colors active:bg-foreground/[0.05]"
+                >
+                  {cancelLabel}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  onConfirm?.()
+                  onOpenChange(false)
+                }}
+                className={cn(
+                  "h-[46px] bg-transparent text-[17px] transition-colors active:bg-foreground/[0.05]",
+                  destructive ? "font-semibold text-destructive" : "font-medium text-primary",
+                )}
+              >
+                {confirmLabel}
+              </button>
+            </div>
+          )}
         </AlertDialogPrimitive.Content>
       </AlertDialogPrimitive.Portal>
     </AlertDialogPrimitive.Root>
