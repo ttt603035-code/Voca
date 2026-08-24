@@ -10,10 +10,7 @@ import * as React from "react"
 import { toast } from "sonner"
 import {
   GroupHeader,
-  InsetGroup,
   LargeTitle,
-  ListRow,
-  SegmentedControl,
   Stepper,
 } from "@/components/kit/primitives"
 import { AppleAlert, AppleButton } from "@/components/kit/primitives"
@@ -32,6 +29,14 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import {
+  GlassGroup,
+  GlassItem,
+} from "@/components/ui/glass-item"
+import {
+  GlassToggleGroup,
+  GlassToggleItem,
+} from "@/components/ui/glass-toggle-group"
 import { ACCENTS, DEFAULT_ACCENT_ID, getAccent } from "@/lib/accents"
 import { useT } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
@@ -48,6 +53,31 @@ function exportData(state: unknown) {
   a.download = `voca-backup-${new Date().toISOString().slice(0, 10)}.json`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+/** A glass row used for inline controls (stepper / switch) with no chevron. */
+function ControlRow({
+  label,
+  description,
+  children,
+}: {
+  label: string
+  description?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex min-h-[48px] w-full items-center justify-between gap-3 px-3.5 py-3">
+      <div className="min-w-0">
+        <p className="text-[16px] leading-tight tracking-[-0.01em]">{label}</p>
+        {description && (
+          <p className="mt-0.5 text-[13px] leading-tight text-muted-foreground">
+            {description}
+          </p>
+        )}
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  )
 }
 
 export function SettingsPage() {
@@ -80,11 +110,10 @@ export function SettingsPage() {
       <LargeTitle title={t("settings")} />
 
       {/* Language */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <GroupHeader>{t("language")}</GroupHeader>
-        <InsetGroup>
-          <ListRow
-            as="button"
+        <GlassGroup>
+          <GlassItem
             onClick={() => setLangSheet(true)}
             primary={t("language")}
             secondary={t("languageDesc")}
@@ -97,56 +126,59 @@ export function SettingsPage() {
               </span>
             }
           />
-        </InsetGroup>
+        </GlassGroup>
       </section>
 
       {/* Vocabulary */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <GroupHeader>{t("vocabularySection")}</GroupHeader>
-        <InsetGroup>
-          <ListRow
+        <GlassGroup>
+          <GlassItem
             icon={Import}
             tint="#007AFF"
-            as="button"
             onClick={() => setImportOpen(true)}
             primary={t("importVocabulary")}
             secondary="CSV / Excel / TXT"
             chevron
           />
-          <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <div>
-              <p className="text-[17px]">{t("newWordsPerSession")}</p>
-              <p className="text-[13px] text-muted-foreground">
-                {t("newWordsPerSessionDesc")}
-              </p>
-            </div>
+          <ControlRow
+            label={t("newWordsPerSession")}
+            description={t("newWordsPerSessionDesc")}
+          >
             <Stepper
               value={state.settings.dailyGoal}
               onChange={setDailyGoal}
               min={1}
               max={100}
             />
-          </div>
-        </InsetGroup>
+          </ControlRow>
+        </GlassGroup>
       </section>
 
       {/* Appearance */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <GroupHeader>{t("appearanceSection")}</GroupHeader>
-        <InsetGroup>
-          <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <span className="text-[17px]">{t("theme")}</span>
-            <SegmentedControl
+        <GlassGroup>
+          <div className="flex flex-col gap-3 px-3.5 py-3.5">
+            <span className="text-[16px] tracking-[-0.01em]">{t("theme")}</span>
+            <GlassToggleGroup
               value={theme}
-              onChange={(v) => setTheme(v as "light" | "dark" | "system")}
-              options={[
-                { value: "light", label: t("light") },
-                { value: "system", label: t("auto") },
-                { value: "dark", label: t("dark") },
-              ]}
-            />
+              onValueChange={(v) => setTheme(v as "light" | "dark" | "system")}
+              tint={0.2}
+              className="w-full"
+            >
+              <GlassToggleItem value="light" className="flex-1 justify-center">
+                {t("light")}
+              </GlassToggleItem>
+              <GlassToggleItem value="system" className="flex-1 justify-center">
+                {t("auto")}
+              </GlassToggleItem>
+              <GlassToggleItem value="dark" className="flex-1 justify-center">
+                {t("dark")}
+              </GlassToggleItem>
+            </GlassToggleGroup>
           </div>
-          <ListRow
+          <GlassItem
             primary={t("themeColor")}
             secondary={getAccent(accentId).name}
             trailing={
@@ -190,22 +222,20 @@ export function SettingsPage() {
               </>
             }
           />
-        </InsetGroup>
+        </GlassGroup>
       </section>
 
       {/* Sound */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <GroupHeader>{t("soundSection")}</GroupHeader>
-        <InsetGroup>
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-[17px]">{t("pronunciation")}</span>
+        <GlassGroup>
+          <ControlRow label={t("pronunciation")}>
             <Switch
               checked={state.settings.sound}
               onCheckedChange={(on) => setSound(on as boolean)}
             />
-          </div>
-          <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <span className="text-[17px]">{t("voice")}</span>
+          </ControlRow>
+          <ControlRow label={t("voice")}>
             <Select
               value={state.settings.voice}
               onValueChange={(v) => setVoice(v as "en-US" | "en-GB")}
@@ -219,18 +249,17 @@ export function SettingsPage() {
                 <SelectItem value="en-GB">{t("voiceUK")}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </InsetGroup>
+          </ControlRow>
+        </GlassGroup>
       </section>
 
       {/* Gemini API */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <GroupHeader>{t("geminiSection")}</GroupHeader>
-        <InsetGroup>
-          <ListRow
+        <GlassGroup>
+          <GlassItem
             icon={Cloud}
             tint="#AF52DE"
-            as="button"
             onClick={() => {
               setKeyDraft(state.settings.geminiKey)
               setKeySheet(true)
@@ -249,14 +278,14 @@ export function SettingsPage() {
             }
             chevron
           />
-        </InsetGroup>
+        </GlassGroup>
       </section>
 
       {/* Data */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <GroupHeader>{t("dataSection")}</GroupHeader>
-        <InsetGroup>
-          <ListRow
+        <GlassGroup>
+          <GlassItem
             icon={Wifi}
             tint="#32ADE6"
             primary={t("localStorage")}
@@ -267,10 +296,9 @@ export function SettingsPage() {
               </span>
             }
           />
-          <ListRow
+          <GlassItem
             icon={Download}
             tint="#34C759"
-            as="button"
             onClick={() => {
               exportData(state)
               toast.success(t("exportDone"))
@@ -278,69 +306,73 @@ export function SettingsPage() {
             primary={t("exportData")}
             chevron
           />
-          <ListRow
+          <GlassItem
             icon={Trash2}
             tint="#FF3B30"
-            as="button"
             onClick={() => setConfirmReset(true)}
             primary={<span className="text-destructive">{t("resetAll")}</span>}
           />
-        </InsetGroup>
+        </GlassGroup>
       </section>
 
       {/* About */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <GroupHeader>{t("aboutSection")}</GroupHeader>
-        <InsetGroup>
-          <ListRow
+        <GlassGroup>
+          <GlassItem
             icon={ShieldCheck}
             tint="#8E8E93"
             primary="Voca"
             secondary={`${t("appDesc")} · ${t("version")} 1.0`}
           />
-        </InsetGroup>
+        </GlassGroup>
       </section>
 
       {/* 语言选择 Sheet */}
       <Sheet open={langSheet} onOpenChange={setLangSheet}>
         <SheetContent
           side="bottom"
-          className="gap-0 rounded-t-[22px] p-0 pb-[env(safe-area-inset-bottom)]"
+          className="gap-0 rounded-t-[22px] border-0 bg-transparent p-0 pb-[env(safe-area-inset-bottom)]"
         >
-          <div className="sticky top-0 z-10 flex justify-center bg-background/90 pt-2.5 pb-1 backdrop-blur">
-            <div className="h-1 w-9 rounded-full bg-foreground/20" />
-          </div>
-          <div className="px-5 pt-2 pb-6">
-            <h2 className="mb-3 text-[20px] font-semibold">{t("language")}</h2>
-            <InsetGroup>
-              {(["zh", "en"] as Lang[]).map((l) => (
-                <ListRow
-                  key={l}
-                  as="button"
-                  onClick={() => {
-                    setLanguage(l)
-                    setLangSheet(false)
-                    toast.success(t("languageSet"))
-                  }}
-                  primary={l === "zh" ? "中文" : "English"}
-                  trailing={
-                    lang === l ? (
-                      <svg
-                        className="size-5 text-[#34C759]"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                    ) : undefined
-                  }
-                />
-              ))}
-            </InsetGroup>
+          <div className="mx-3 mt-0">
+            <GlassGroup radius={22} blur={26} tint={0.38} className="p-0">
+              <div className="flex justify-center pt-2.5 pb-1">
+                <div className="h-1 w-9 rounded-full bg-foreground/20" />
+              </div>
+              <div className="px-3.5 pt-2 pb-5">
+                <h2 className="mb-3 px-1 text-[20px] font-semibold">
+                  {t("language")}
+                </h2>
+                <GlassGroup tint={0.2} blur={10} radius={14}>
+                  {(["zh", "en"] as Lang[]).map((l) => (
+                    <GlassItem
+                      key={l}
+                      onClick={() => {
+                        setLanguage(l)
+                        setLangSheet(false)
+                        toast.success(t("languageSet"))
+                      }}
+                      primary={l === "zh" ? "中文" : "English"}
+                      trailing={
+                        lang === l ? (
+                          <svg
+                            className="size-5 text-[#34C759]"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        ) : undefined
+                      }
+                    />
+                  ))}
+                </GlassGroup>
+              </div>
+            </GlassGroup>
           </div>
           <SheetTitle className="sr-only">{t("language")}</SheetTitle>
         </SheetContent>
@@ -350,49 +382,65 @@ export function SettingsPage() {
       <Sheet open={keySheet} onOpenChange={setKeySheet}>
         <SheetContent
           side="bottom"
-          className="gap-0 overflow-y-auto rounded-t-[22px] p-0 pb-[env(safe-area-inset-bottom)]"
+          className="gap-0 overflow-y-auto rounded-t-[22px] border-0 bg-transparent p-0 pb-[env(safe-area-inset-bottom)]"
         >
-          <div className="sticky top-0 z-10 flex justify-center bg-background/90 pt-2.5 pb-1 backdrop-blur">
-            <div className="h-1 w-9 rounded-full bg-foreground/20" />
-          </div>
-          <div className="space-y-4 px-5 pt-2 pb-6">
-            <h2 className="text-[20px] font-semibold">{t("geminiKey")}</h2>
-            <input
-              type="password"
-              value={keyDraft}
-              onChange={(e) => setKeyDraft(e.target.value)}
-              placeholder="AIza…"
-              className="h-11 w-full rounded-[10px] bg-grouped px-3 text-[15px] outline-none focus:ring-2 focus:ring-ring/40"
-            />
-            <p className="text-[13px] leading-snug text-muted-foreground">
-              {t("keyHint")}
-            </p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setGeminiKey("")
-                  setKeyDraft("")
-                  toast(t("keyCleared"))
-                }}
-                disabled={!hasKey && !keyDraft}
-                className="h-12 flex-1 rounded-[12px] bg-grouped text-[17px] font-medium disabled:opacity-40"
-              >
-                {t("clear")}
-              </button>
-              <AppleButton
-                onClick={() => {
-                  setGeminiKey(keyDraft)
-                  setKeySheet(false)
-                  toast(
-                    keyDraft.trim() ? t("keySaved") : t("keyCleared"),
-                  )
-                }}
-                className="flex-1"
-              >
-                {t("save")}
-              </AppleButton>
-            </div>
+          <div className="mx-3">
+            <GlassGroup radius={22} blur={26} tint={0.38}>
+              <div className="flex justify-center pt-2.5 pb-1">
+                <div className="h-1 w-9 rounded-full bg-foreground/20" />
+              </div>
+              <div className="space-y-4 px-4 pt-2 pb-5">
+                <h2 className="text-[20px] font-semibold">{t("geminiKey")}</h2>
+                <GlassGroup
+                  as="div"
+                  tint={0.2}
+                  blur={10}
+                  radius={12}
+                  className="p-0"
+                >
+                  <input
+                    type="password"
+                    value={keyDraft}
+                    onChange={(e) => setKeyDraft(e.target.value)}
+                    placeholder="AIza…"
+                    className="h-12 w-full bg-transparent px-4 text-[15px] outline-none"
+                  />
+                </GlassGroup>
+                <p className="text-[13px] leading-snug text-muted-foreground">
+                  {t("keyHint")}
+                </p>
+                <div className="flex gap-3">
+                  <GlassGroup
+                    as="button"
+                    type="button"
+                    onClick={() => {
+                      setGeminiKey("")
+                      setKeyDraft("")
+                      toast(t("keyCleared"))
+                    }}
+                    disabled={!hasKey && !keyDraft}
+                    tint={0.22}
+                    blur={14}
+                    radius={14}
+                    className="h-12 flex-1 text-[17px] font-medium text-primary disabled:opacity-40"
+                  >
+                    {t("clear")}
+                  </GlassGroup>
+                  <AppleButton
+                    onClick={() => {
+                      setGeminiKey(keyDraft)
+                      setKeySheet(false)
+                      toast(
+                        keyDraft.trim() ? t("keySaved") : t("keyCleared"),
+                      )
+                    }}
+                    className="flex-1"
+                  >
+                    {t("save")}
+                  </AppleButton>
+                </div>
+              </div>
+            </GlassGroup>
           </div>
           <SheetTitle className="sr-only">{t("geminiKey")}</SheetTitle>
         </SheetContent>

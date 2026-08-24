@@ -12,19 +12,16 @@ import {
   AppleButton,
   EmptyState,
   GroupHeader,
-  IconBtn,
   InsetGroup,
   LargeTitle,
   ListRow,
   ProgressBar,
 } from "@/components/kit/primitives"
+import { GlassIconButton } from "@/components/ui/glass-item"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  GlassToggleGroup,
+  GlassToggleItem,
+} from "@/components/ui/glass-toggle-group"
 import { dateStr, fmtDuration, greetingKey, useT } from "@/lib/i18n"
 import { buildTrend, pendingCount, trendLabelStep } from "@/lib/trends"
 import { calcStreak, todayStr } from "@/lib/srs"
@@ -110,7 +107,7 @@ export function TodayPage() {
       <LargeTitle
         title={t("tabToday")}
         actions={
-          <IconBtn
+          <GlassIconButton
             icon={Settings2}
             label={t("settings")}
             onClick={() => navigate("/settings")}
@@ -191,21 +188,18 @@ export function TodayPage() {
       <section className="space-y-2.5">
         <div className="flex items-center justify-between">
           <GroupHeader className="!px-0">{t("trendTitle")}</GroupHeader>
-          <Select
+          <GlassToggleGroup
             value={String(range)}
             onValueChange={(v) => setRange(Number(v) as Range)}
+            tint={0.2}
+            className="scale-95 origin-right"
           >
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {rangeOptions.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {rangeOptions.map((o) => (
+              <GlassToggleItem key={o.value} value={o.value} className="px-3">
+                {o.label}
+              </GlassToggleItem>
+            ))}
+          </GlassToggleGroup>
         </div>
 
         <div className="space-y-1.5">
