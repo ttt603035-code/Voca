@@ -1,14 +1,22 @@
-import { BookOpen, CircleX, Copy, Heart, Import, Loader2, Plus, RefreshCw } from "lucide-react"
+import {
+  BookOpen,
+  CircleX,
+  Copy,
+  Heart,
+  Import,
+  Loader2,
+  Plus,
+  RefreshCw,
+} from "lucide-react"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { ImportVocabSheet } from "@/components/import-vocab-sheet"
 import {
-  GroupHeader,
-  IconBtn,
-  InsetGroup,
-  LargeTitle,
-  ListRow,
-} from "@/components/kit/primitives"
+  GlassGroup,
+  GlassIconButton,
+  GlassItem,
+} from "@/components/ui/glass-item"
+import { GroupHeader, LargeTitle } from "@/components/kit/primitives"
 import { WordSheet } from "@/components/word-sheet"
 import { bookStats, useVoca } from "@/store/voca-context"
 import { useT } from "@/lib/i18n"
@@ -32,12 +40,12 @@ export function WordsPage() {
         title={t("tabWords")}
         actions={
           <>
-            <IconBtn
+            <GlassIconButton
               icon={Import}
               label={t("importVocabulary")}
               onClick={() => setImportOpen(true)}
             />
-            <IconBtn
+            <GlassIconButton
               icon={Plus}
               label={t("addWord")}
               onClick={() => setAddOpen(true)}
@@ -47,17 +55,16 @@ export function WordsPage() {
       />
 
       {/* 单词本 */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <GroupHeader>{t("vocabulary")}</GroupHeader>
-        <InsetGroup>
+        <GlassGroup>
           {state.books.map((b) => {
             const s = bookStats(state, b.id)
             return (
-              <ListRow
+              <GlassItem
                 key={b.id}
                 icon={BookOpen}
                 tint={b.builtIn ? "#007AFF" : "#34C759"}
-                as="button"
                 onClick={() => navigate(`/words/books/${b.id}`)}
                 primary={
                   b.builtIn ? (
@@ -88,7 +95,7 @@ export function WordsPage() {
           })}
           {/* 内置词库加载状态 */}
           {!builtIn.loaded && (
-            <ListRow
+            <GlassItem
               icon={Loader2}
               tint="#8E8E93"
               primary={
@@ -100,20 +107,19 @@ export function WordsPage() {
             />
           )}
           {builtIn.loaded && builtIn.error && (
-            <ListRow
+            <GlassItem
               icon={RefreshCw}
               tint="#FF3B30"
               primary={
                 <span className="text-destructive">{t("booksLoadError")}</span>
               }
-              as="button"
               onClick={reloadBuiltIn}
               trailing={
                 <span className="text-[14px] text-primary">{t("retry")}</span>
               }
             />
           )}
-        </InsetGroup>
+        </GlassGroup>
         {state.books.length === 0 && !builtIn.loaded && (
           <p className="px-1 text-[13px] text-muted-foreground">
             {t("emptyVocabularyDesc")}
@@ -122,12 +128,11 @@ export function WordsPage() {
       </section>
 
       {/* 快捷入口：Favorites / Mistakes / Similar Words */}
-      <section className="space-y-2.5">
-        <InsetGroup>
-          <ListRow
+      <section className="space-y-3">
+        <GlassGroup>
+          <GlassItem
             icon={Heart}
             tint="#FF3B30"
-            as="button"
             onClick={() => navigate("/words/favorites")}
             primary={t("favorites")}
             trailing={
@@ -137,10 +142,9 @@ export function WordsPage() {
             }
             chevron
           />
-          <ListRow
+          <GlassItem
             icon={CircleX}
             tint="#FF9500"
-            as="button"
             onClick={() => navigate("/mistakes")}
             primary={t("mistakes")}
             trailing={
@@ -150,10 +154,9 @@ export function WordsPage() {
             }
             chevron
           />
-          <ListRow
+          <GlassItem
             icon={Copy}
             tint="#30B0C7"
-            as="button"
             onClick={() => navigate("/similar")}
             primary={t("similarWords")}
             trailing={
@@ -163,7 +166,7 @@ export function WordsPage() {
             }
             chevron
           />
-        </InsetGroup>
+        </GlassGroup>
       </section>
 
       <ImportVocabSheet open={importOpen} onClose={() => setImportOpen(false)} />
