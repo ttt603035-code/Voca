@@ -16,63 +16,50 @@ import {
   StatTile,
 } from "@/components/kit/primitives"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  GlassToggleGroup,
+  GlassToggleItem,
+} from "@/components/ui/glass-toggle-group"
 import { fmtDuration, useT } from "@/lib/i18n"
-import { buildTrend, pendingCount, trendLabelStep } from "@/lib/trends"
+import { buildWindowTrend, windowLabelStep, type TrendMode } from "@/lib/trends"
 import { calcStreak, todayStr } from "@/lib/srs"
 import { useVoca } from "@/store/voca-context"
-
-type Range = 7 | 30 | 90
 
 export function InsightsPage() {
   const { state } = useVoca()
   const { t, lang } = useT()
   const navigate = useNavigate()
-  const [range, setRange] = React.useState<Range>(7)
+  const [range, setRange] = React.useState<TrendMode>("week")
   const today = todayStr()
 
-  const points = buildTrend(state, range, lang === "zh" ? "zh" : "en", t as never)
+  const points = buildWindowTrend(state, range, lang === "zh" ? "zh" : "en", t as never)
   const barData: BarPoint[] = points.map((p) => ({
     label: p.label,
     highlight: p.date === today,
     segments: [
       { value: p.learned, className: "bg-primary/90" },
       { value: p.reviewed, className: "bg-primary/45" },
-      { value: p.pending ?? 0, className: "bg-primary/20" },
     ],
   }))
   const timePoints = points.map((p) => ({
     label: p.label,
     value: Math.round(((state.activity[p.date]?.seconds ?? 0) / 60) * 10) / 10,
   }))
+  const labelStep = windowLabelStep(points.length)
 
-  /* 窗口内指标 */
-  const windowDates = new Set(points.filter((p) => p.pending === undefined).map((p) => p.date))
-  let seconds = 0
+  /* 窗口内指标：背了多少 / 复习了多少 / 用了多少时间 */
+  const windowDates = new Set(points.map((p) => p.date))
+  let learned = 0
   let reviews = 0
+  let seconds = 0
   for (const d of windowDates) {
     const s = state.activity[d]
     if (s) {
-      seconds += s.seconds
+      learned += s.learned
       reviews += s.reviews
+      seconds += s.seconds
     }
   }
-  let correct = 0
-  let wrong = 0
-  for (const p of Object.values(state.progress)) {
-    if (p.lastReviewed && windowDates.has(p.lastReviewed)) {
-      correct += p.correct
-      wrong += p.wrong
-    }
-  }
-  const accuracy = correct + wrong > 0 ? Math.round((correct / (correct + wrong)) * 100) : null
   const streak = calcStreak(state.activity)
-  const pending = pendingCount(state)
 
   /* 掌握分布 */
   const total = state.words.length
@@ -86,72 +73,62 @@ export function InsightsPage() {
     .sort((a, b) => b.p!.wrong - a.p!.wrong)
     .slice(0, 3)
 
-  const rangeOptions: { value: string; label: string }[] = [
-    { value: "7", label: t("range7") },
-    { value: "30", label: t("range30") },
-    { value: "90", label: t("range90") },
+  const rangeOptions: { value: TrendMode; label: string }[] = [
+    { value: "day", label: t("rangeDay") },
+    { value: "week", label: t("rangeWeek") },
+    { value: "month", label: t("rangeMonth") },
   ]
 
   return (
     <div className="space-y-7">
-      <LargeTitle
-        title={t("tabInsights")}
-        actions={
-          <Select
-            value={String(range)}
-            onValueChange={(v) => setRange(Number(v) as Range)}
-          >
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {rangeOptions.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        }
-      />
+      <LargeTitle title={t("tabInsights")} />
 
-      {/* 窗口指标 */}
+      {/* 今日 / 本周 / 本月 分段控件 */}
+      <div className="flex justify-center">
+        <GlassToggleGroup
+          value={range}
+          onValueChange={(v) => setRange(v as TrendMode)}
+          tint={0.25}
+          className="w-fit"
+        >
+          {rangeOptions.map((o) => (
+            <GlassToggleItem key={o.value} value={o.value} className="px-4">
+              {o.label}
+            </GlassToggleItem>
+          ))}
+        </GlassToggleGroup>
+      </div>
+
+      {/* 学习数据：背了多少 / 复习了多少 / 用了多少时间 / 连续打卡 */}
       <InsetGroup dividers={false} className="grid grid-cols-2 gap-px">
-        <StatTile label={t("studyTime")} value={fmtDuration(seconds, t, lang)} />
+        <StatTile label={t("statLearned")} value={t("wordsShort", { n: learned })} />
         <StatTile
           label={t("wordsReviewed")}
           value={t("wordsShort", { n: reviews })}
         />
-        <StatTile
-          label={t("accuracy")}
-          value={accuracy === null ? "—" : `${accuracy}%`}
-        />
+        <StatTile label={t("studyTime")} value={fmtDuration(seconds, t, lang)} />
         <StatTile
           label={t("currentStreak")}
           value={streak > 0 ? `${streak}${lang === "zh" ? "天" : "d"}` : "0"}
         />
       </InsetGroup>
 
-      {/* 学习词数趋势 */}
+      {/* 学习趋势 */}
       <section className="space-y-2.5">
-        <GroupHeader>{t("wordsTrend")}</GroupHeader>
+        <GroupHeader>{t("trendTitle")}</GroupHeader>
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <ChartDot className="bg-primary/90" label={t("legendLearned")} />
             <ChartDot className="bg-primary/45" label={t("legendReviewed")} />
-            <ChartDot
-              className="bg-primary/20"
-              label={t("pendingNow", { n: pending })}
-            />
           </div>
-          <AppleBars data={barData} height={170} labelStep={trendLabelStep(range)} />
+          <AppleBars data={barData} height={170} labelStep={labelStep} />
         </div>
       </section>
 
       {/* 学习时长趋势 */}
       <section className="space-y-2.5">
         <GroupHeader>{t("timeTrend")}</GroupHeader>
-        <AppleArea points={timePoints} height={140} labelStep={trendLabelStep(range)} />
+        <AppleArea points={timePoints} height={140} labelStep={labelStep} />
       </section>
 
       {/* 掌握度 */}
