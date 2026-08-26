@@ -192,10 +192,10 @@ export function TodayPage() {
             value={String(range)}
             onValueChange={(v) => setRange(Number(v) as Range)}
             tint={0.2}
-            className="scale-95 origin-right"
+            className="w-fit"
           >
             {rangeOptions.map((o) => (
-              <GlassToggleItem key={o.value} value={o.value} className="px-3">
+              <GlassToggleItem key={o.value} value={o.value} className="px-2.5">
                 {o.label}
               </GlassToggleItem>
             ))}
