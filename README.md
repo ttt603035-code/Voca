@@ -7,7 +7,7 @@
 ```
 public/vocabulary/          ← 词库数据（GitHub 项目内，只读）
 ├── index.json              ← 内置词书注册表（新增词书只需加 JSON + 注册）
-├── tem4.json               ← 专四（考纲词汇：8,923 词 / 60 个 List，含音标·词性·释义）
+├── tem4.json               ← 专四（华研专四词汇突破8000：4,646 词 / 44 组，顺序与用户源文件一致）
 └── cet6.json               ← 六级（测试数据）
         ↓
 src/services/vocabulary.ts  ← Vocabulary Service（唯一读取入口）
@@ -18,7 +18,7 @@ Review / Favorites / Mistakes / Similar Words / Insights / UI
 ```
 
 - **内置词库**（专四、六级…）：JSON 文件 → Service 读取 → 只读，不写入 localStorage
-- **专四词书来源**：《高校英语专业四、八级考试大纲》词汇表（整理自 mahavivo/english-wordlists），剔除星标八级词后共 8,923 词，按字母序分 60 个 List
+- **专四词书来源**：《华研专四词汇突破8000》（`华研专四词汇突破8000.txt` / `.csv`），单词顺序、分组、释义完全跟随用户源文件（Part I~IV 共 36 个 Lesson + 附录2 热词 8 类 = 44 组 / 4,646 词）；音标由考纲词表补充
 - **用户词库**（我的单词 / 导入的词书）：浏览器本地持久化，可增删改
 - 词书结构固定为 **Book → List → Word**，`listOrder` / `wordOrder` 原始顺序永久保留
 - 以后新增词书（如 IELTS）：`public/vocabulary/` 加 JSON + 在 `index.json` 注册，**无需改任何 React 代码**
@@ -29,7 +29,7 @@ Review / Favorites / Mistakes / Similar Words / Insights / UI
 ```
 Words（单词）
 ├── Vocabulary 单词本
-│   ├── 专四（内置，来自 tem4.json）
+│   ├── 专四（内置，来自 tem4.json，华研专四词汇突破8000）
 │   ├── 六级（内置，来自 cet6.json）
 │   └── 我的单词 My Words（Reading / Writing / Daily，用户数据）
 ├── Favorites 收藏
