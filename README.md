@@ -29,7 +29,7 @@ Review / Favorites / Mistakes / Similar Words / Insights / UI
 ```
 Words（单词）
 ├── Vocabulary 单词本
-│   ├── 专四（内置，来自 tem4.json，封面为仓库原图 IMG_1519.jpg）
+│   ├── 专四（内置，来自 tem4.json）
 │   ├── 六级（内置，来自 cet6.json）
 │   └── 我的单词 My Words（Reading / Writing / Daily，用户数据）
 ├── Favorites 收藏
