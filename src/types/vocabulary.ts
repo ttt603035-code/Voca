@@ -43,7 +43,5 @@ export interface BuiltInListData {
 export interface BuiltInBookData {
   id: string
   name: string
-  /** 词书封面图（public/ 下相对路径，如 IMG_1519.jpg），可选 */
-  cover?: string
   lists: BuiltInListData[]
 }
