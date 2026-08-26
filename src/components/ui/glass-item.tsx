@@ -87,6 +87,8 @@ export interface GlassItemProps {
     className?: string;
     style?: React.CSSProperties;
   }>;
+  /** 自定义前置元素（如图片封面），优先级高于 icon */
+  iconNode?: React.ReactNode;
   tint?: string;
   primary: React.ReactNode;
   secondary?: React.ReactNode;
@@ -104,6 +106,7 @@ export interface GlassItemProps {
  */
 export function GlassItem({
   icon: Icon,
+  iconNode,
   tint,
   primary,
   secondary,
@@ -126,7 +129,8 @@ export function GlassItem({
         className,
       )}
     >
-      {Icon && <GlassIcon icon={Icon} tint={tint} />}
+      {iconNode ??
+        (Icon && <GlassIcon icon={Icon} tint={tint} />)}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[16px] leading-tight tracking-[-0.01em]">
           {primary}

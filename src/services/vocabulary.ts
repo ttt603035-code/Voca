@@ -76,6 +76,7 @@ function normalizeBook(
   return {
     id: entry.id,
     name: entry.name,
+    cover: raw.cover,
     lists,
   }
 }

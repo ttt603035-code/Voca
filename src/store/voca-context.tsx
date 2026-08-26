@@ -56,7 +56,12 @@ function builtInToAppState(books: BuiltInBookData[]) {
   const outLists: VocaList[] = []
   const outWords: Word[] = []
   for (const book of books) {
-    outBooks.push({ id: book.id, name: book.name, builtIn: true })
+    outBooks.push({
+      id: book.id,
+      name: book.name,
+      builtIn: true,
+      cover: book.cover,
+    })
     for (const list of book.lists) {
       outLists.push({
         id: list.id,

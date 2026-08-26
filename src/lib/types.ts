@@ -5,6 +5,8 @@ export interface Book {
   name: string
   /** 内置词库（来自 public/vocabulary/*.json，只读） */
   builtIn?: boolean
+  /** 内置词书封面图（public/ 相对路径） */
+  cover?: string
 }
 
 export interface VocaList {

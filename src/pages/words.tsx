@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/glass-item"
 import { GroupHeader, LargeTitle } from "@/components/kit/primitives"
 import { WordSheet } from "@/components/word-sheet"
+import { publicAsset } from "@/services/vocabulary"
 import { bookStats, useVoca } from "@/store/voca-context"
 import { useT } from "@/lib/i18n"
 
@@ -64,6 +65,15 @@ export function WordsPage() {
               <GlassItem
                 key={b.id}
                 icon={BookOpen}
+                iconNode={
+                  b.cover ? (
+                    <img
+                      src={publicAsset(b.cover)}
+                      alt={b.name}
+                      className="size-8 shrink-0 rounded-[10px] border border-white/35 object-cover dark:border-white/[0.07]"
+                    />
+                  ) : undefined
+                }
                 tint={b.builtIn ? "#007AFF" : "#34C759"}
                 onClick={() => navigate(`/words/books/${b.id}`)}
                 primary={
